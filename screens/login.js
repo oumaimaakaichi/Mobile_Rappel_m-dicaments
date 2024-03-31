@@ -98,11 +98,11 @@ const LoginC = ({ navigation }) => {
 
   const loginHandle = () => {
     if (!data.email || !data.password) {
-      setError(true); // Définissez l'erreur pour afficher un message d'erreur à l'utilisateur
-      return; // Arrêtez l'exécution de la fonction si les champs email ou password sont vides
+      setError(true); 
+      return; 
     }
   
-    // Effectuez la requête fetch vers le serveur
+
     fetch("http://192.168.43.105:5000/api/utlisateur/login", {
       method: "POST",
       headers: {
@@ -114,24 +114,24 @@ const LoginC = ({ navigation }) => {
       }),
     })
       .then((response) => {
-        // Vérifiez si la réponse est un succès (status 200)
+     
         if (!response.ok) {
-          throw new Error("Identifiants invalides"); // Lancez une erreur si la réponse n'est pas OK
+          throw new Error("Identifiants invalides"); 
         }
-        return response.json(); // Renvoie les données JSON de la réponse
+        return response.json();
       })
       .then((res) => {
-        // Traitez la réponse JSON ici
-        console.log(res); // Affichez la réponse dans la console
-        storeClientData(res.data); // Stockez les données de l'utilisateur (assurez-vous que la fonction storeClientData est définie et fait ce que vous attendez)
+        
+        console.log("res"+res.Data.email); 
+        storeClientData(res.Data); 
         navigation.navigate('dash');
         console.log("client:"+res.data)
-        // Naviguez vers la page d'accueil après la connexion réussie
+    
       })
       .catch((error) => {
-        // Capturez les erreurs ici
-        setError(true); // Définissez l'erreur pour afficher un message d'erreur à l'utilisateur
-        console.error(error); // Affichez l'erreur dans la console pour le débogage
+      
+        setError(true); 
+        console.error(error);
       });
   };
   
@@ -160,6 +160,7 @@ const LoginC = ({ navigation }) => {
             marginRight:10,
             textAlign: 'center',
           marginTop:120 ,
+          borderRadius:20
             
           },
         ]}
@@ -227,7 +228,7 @@ const LoginC = ({ navigation }) => {
         <View style={styles.action}>
      <Feather name="lock" style={styles.icon} color={colors.text} size={20} />
           <TextInput
-            placeholder="Mot de passe client lavage"
+            placeholder="Mot de passe"
             placeholderTextColor="#666666"
             secureTextEntry={data.secureTextEntry ? true : false}
             style={[

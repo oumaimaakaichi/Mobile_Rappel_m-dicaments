@@ -17,22 +17,11 @@ const {width:WIDTH} =Dimensions.get('window')
 import * as Animatable from "react-native-animatable";
 import { LinearGradient } from "expo-linear-gradient";
 import * as ImagePicker from 'expo-image-picker';
-
+import * as FileSystem from 'expo-file-system';
 import Feather from "react-native-vector-icons/Feather";
 import { useTheme } from "react-native-paper";
 import Icon from 'react-native-vector-icons/Feather';
-function dataURLtoFile(dataurl, filename) {
- 
-    var bstr = atob(dataurl), 
-        n = bstr.length, 
-        u8arr = new Uint8Array(n);
-        
-    while(n--){
-        u8arr[n] = bstr.charCodeAt(n);
-    }
-    
-    return new File([u8arr], filename);
-  }
+
 const InscriC = ({ navigation }) => {
   
       const [data, setData] = React.useState({
@@ -76,77 +65,74 @@ const InscriC = ({ navigation }) => {
   const [avatar, setAvatar] = useState('');
   const [avatarFile, setAvatarFile] = useState();
     const regEx = /[a-zA-Z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,8}(.[a-z{2,8}])?/g
-    const openImageLibrary = async () => {
-        const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    
-        if (status === 'granted') {
-          const response = await ImagePicker.launchImageLibraryAsync({
-            mediaTypes: ImagePicker.MediaTypeOptions.Images,
-            allowsEditing: true,
-            aspect: [4, 3],
-            quality: 1,
-            base64: true
-          });
-    
-          if (!response.cancelled) {
-            setAvatar(response.uri);
-            setAvatarFile(response.base64);
-          }
-        }
+    const uriToFile = async (uri) => {
+      const fileInfo = await FileSystem.getInfoAsync(uri);
+      const file = {
+        uri: uri,
+        name: fileInfo.uri.split('/').pop(),
+        type: 'image/jpeg', 
       };
-    async function AddClient(){
-
-      if(  !password || !email ||!nom|| !prenom|| !Num_tel ||Num_tel<0  || password.length<6 || Num_tel.length!=8 ||(!regEx.test(email) && email!="") ){
+      return file;
+    };
+    
+    const openImageLibrary = async () => {
+      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    
+      if (status === 'granted') {
+        const response = await ImagePicker.launchImageLibraryAsync({
+          mediaTypes: ImagePicker.MediaTypeOptions.Images,
+          allowsEditing: true,
+          aspect: [4, 3],
+          quality: 1,
+          base64: true
+        });
+    
+        if (!response.cancelled) {
+          setAvatar(response.uri);
+          const file = await uriToFile(response.uri);
+          setAvatarFile(file); // Stockez l'objet File
+        }
+      }
+    };
+    
+    const AddClient = async () => {
+      // Vérifiez si le formulaire est valide avant de soumettre
+      if (!password || !email || !nom || !prenom || !Num_tel || Num_tel < 0 || password.length < 6 || Num_tel.length != 8 || (!regEx.test(email) && email != "")) {
         setError(true);
         return false;
-          
       }
-      
-    fetch("http://192.168.43.105:5000/api/utlisateur/" , {
-        method: 'POST',
-        headers:{
-            "Content-Type" : 'application/json',
-           
-        },
-        body:JSON.stringify({
-         
-          nom:nom,
-          prenom:prenom,
-          Num_tel:Num_tel,
-          email:email,
-          password:password,
-          age:age,
-          nbr_enfants:nbr_enfants,
-          image:avatarFile
-         
-        }),
-    }).then(res=>res.json())
-    .then(async data=>{
-      if(data){
-       if(data.Adr!='' && data.MPass!=''){
-        {
-          navigation.navigate('welcome')
-          console.log("ajouter avec succée")
-        }
     
-      }}
-      
-    })
-    .catch(err=>{
-       
-      console.log(err)
-    });
-   
-}
+      try {
+        const formData = new FormData();
+        formData.append('avatar', avatarFile); // Ajoutez l'objet File à FormData
+    
+        formData.append('nom', nom);
+        formData.append('prenom', prenom);
+        formData.append('Num_tel', Num_tel);
+        formData.append('email', email);
+        formData.append('password', password);
+        formData.append('age', age);
+        formData.append('nbr_enfants', nbr_enfants);
+    
+        const response = await fetch("http://192.168.43.105:5000/api/utlisateur/add-user", {
+          method: 'POST',
+          headers: {
+            "Content-Type": 'multipart/form-data', // Utilisez multipart/form-data pour envoyer des fichiers
+          },
+          body: formData, // Envoyez FormData avec toutes les données du formulaire
+        });
+    
+        const data = await response.json();
+        if (data.Adr !== '' && data.MPass !== '') {
+          navigation.navigate('welcome');
+          console.log("ajouter avec succès");
+        }
+      } catch (error) {
+        console.log(error);
+      }
+    };
 
-  const uploadProfileImage = async () => {
-    const formData = new FormData();
-    formData.append('profile', {
-      name: new Date() + '_profile',
-      uri: `data:image/gif;base64,${avatar}`,
-      type: 'image/jpg',
-    });
-  }
+  
   return (
     <ImageBackground
     source={require("../assets/k2.jpg")}
@@ -172,24 +158,21 @@ const InscriC = ({ navigation }) => {
           },
         ]}
       >
-  <View>
-  <TouchableOpacity
-
-                onPress={openImageLibrary}
-                style={styles.uploadBtnContainer}
-              >
-                {avatar ? (
-                  <Image
-                    source={{ uri: avatar }}
-                    style={{ width: '100%', height: '100%' }}
-                  />
-                ) : (
-                  <Text style={styles.uploadBtn}>Cliquer pour choisir une image</Text>
-                )}
-              </TouchableOpacity>
-
-
-          </View>
+ <View>
+                        <TouchableOpacity
+                            onPress={openImageLibrary}
+                            style={styles.uploadBtnContainer}
+                        >
+                            {avatar ? (
+                                <Image
+                                    source={{ uri: avatar }} // Utilisez l'URI de l'image sélectionnée
+                                    style={{ width: '100%', height: '100%' }}
+                                />
+                            ) : (
+                                <Text style={styles.uploadBtn}  onChangeText={(text) => setProfileImage(text)}>Cliquer pour choisir une image</Text>
+                            )}
+                        </TouchableOpacity>
+                    </View>
         <Text
           style={[
             styles.text_footer,

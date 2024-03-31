@@ -2,7 +2,7 @@ import React, { useRef, useState , useEffect } from 'react';
 import { Animated, Image, SafeAreaView, StyleSheet, Text, TouchableOpacity, View ,ScrollView } from 'react-native';
 import profile from '../assets/profile.png';
 import { getClientData } from '../utils/AsyncStorageClient';
-import AsyncStorage from "@react-native-async-storage/async-storage";
+
 // Tab ICons...
 import home from '../assets/home.png';
 import Hor from '../assets/hr.png'
@@ -14,7 +14,7 @@ import logout from '../assets/logout.png';
 import menu from '../assets/menu.png';
 import close from '../assets/close.png';
 
-
+import p from '../assets/cjt.png'
 
 import { useIsFocused } from '@react-navigation/native';
 import historique from '../assets/histo.png';
@@ -32,14 +32,14 @@ export default function Dashboard({ navigation }) {
   const closeButtonOffset = useRef(new Animated.Value(0)).current;
   const isFocused = useIsFocused();
   useEffect(async () => {
-    if(isFocused){ 
+   
        const data = await getClientData();
         setUser(data);
-        console.log("ddddd"+user)
-    }
+        console.log("ddddd"+user.email)
+    
 
         
-  }, [isFocused]);
+  }, []);
 
   return (
     <>
@@ -49,9 +49,29 @@ export default function Dashboard({ navigation }) {
 <ScrollView style={styles.s}>
       <View style={{ justifyContent: 'flex-start', padding: 15, alignItems: 'center', marginBottom:20 }}>
       
-
+      
         
-
+          <Image
+            source={ p}
+            style={{
+              width: 100,
+              height: 100,
+              alignSelf:'center',
+              marginTop:10
+          
+            }}
+          
+          />
+         
+      
+     
+        
+      <Text style={{
+          fontSize: 22,
+          fontWeight: 'bold',
+          color: 'whitesmoke',
+          marginTop: 20
+        }}>{user.nom} {user.prenom}</Text>
       
      
 
@@ -90,7 +110,7 @@ export default function Dashboard({ navigation }) {
 
       </View>
     </TouchableOpacity>
-    <TouchableOpacity  onPress={() => {navigation.navigate("Update")}}>
+    <TouchableOpacity  onPress={() => {navigation.navigate("update")}}>
       <View style={{
         flexDirection: "row",
         alignItems: 'center',
@@ -138,7 +158,7 @@ export default function Dashboard({ navigation }) {
           fontWeight: 'bold',
           paddingLeft: 15,
           color: "white"
-        }}>Historique</Text>
+        }}>Document</Text>
       </View>
       </TouchableOpacity>
       <TouchableOpacity onPress={() => {navigation.navigate("DashHoraire")}}>
@@ -163,7 +183,57 @@ export default function Dashboard({ navigation }) {
           fontWeight: 'bold',
           paddingLeft: 15,
           color: "white"
-        }}>Horaires </Text>
+        }}>Contacts </Text>
+      </View>
+      </TouchableOpacity>
+      <TouchableOpacity onPress={() => {navigation.navigate("DashHoraire")}}>
+      <View style={{
+        flexDirection: "row",
+        alignItems: 'center',
+        paddingVertical: 8,
+        backgroundColor: 'transparent',
+        paddingLeft: 13,
+        paddingRight: 35,
+        borderRadius: 8,
+        marginTop: 20
+      }}>
+
+        <Image source={Hor} style={{
+          width: 25, height: 25,
+          tintColor: "white"
+        }}></Image>
+
+        <Text style={{
+          fontSize: 15,
+          fontWeight: 'bold',
+          paddingLeft: 15,
+          color: "white"
+        }}>Médicaments </Text>
+      </View>
+      </TouchableOpacity>
+      <TouchableOpacity onPress={() => {navigation.navigate("DashHoraire")}}>
+      <View style={{
+        flexDirection: "row",
+        alignItems: 'center',
+        paddingVertical: 8,
+        backgroundColor: 'transparent',
+        paddingLeft: 13,
+        paddingRight: 35,
+        borderRadius: 8,
+        marginTop: 20
+      }}>
+
+        <Image source={Hor} style={{
+          width: 25, height: 25,
+          tintColor: "white"
+        }}></Image>
+
+        <Text style={{
+          fontSize: 15,
+          fontWeight: 'bold',
+          paddingLeft: 15,
+          color: "white"
+        }}>Rendez-vous </Text>
       </View>
       </TouchableOpacity>
     <TouchableOpacity onPress={() => {
@@ -178,7 +248,7 @@ export default function Dashboard({ navigation }) {
         paddingVertical: 8,
         backgroundColor: 'transparent',
         paddingLeft: 13,
-        paddingRight: 35,
+        paddingRight: 30,
         borderRadius: 8,
         marginTop: 20
       }}>
@@ -286,6 +356,9 @@ export default function Dashboard({ navigation }) {
          <ScrollView  horizontal={true} >
         
          
+
+
+
           </ScrollView>
         </Animated.View>
         </ScrollView>

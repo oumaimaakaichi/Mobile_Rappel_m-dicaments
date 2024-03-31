@@ -8,7 +8,7 @@ import Login from './screens/log';
 import WelcomeScreen from './screens/welcome';
 import InscriC from './screens/inscription';
 import Dashboard from './screens/dashboars';
-
+import Profile from './screens/profil';
 const Stack = createNativeStackNavigator();
 
 export default function App() {
@@ -19,6 +19,7 @@ export default function App() {
         <Stack.Screen name="home" component={WelcomeScreen} />
         <Stack.Screen name="registre" component={InscriC} />
         <Stack.Screen name="dash" component={Dashboard} />
+        <Stack.Screen name="update" component={Profile} />
       </Stack.Navigator>
     </NavigationContainer>
   );

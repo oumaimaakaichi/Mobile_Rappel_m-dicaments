@@ -20,4 +20,6 @@ export const storeClientData = async (value) => {
     }
   };
 
- 
+  export const updateClientData = async (data) => {
+    return AsyncStorage.setItem('client', JSON.stringify(data));
+  }
