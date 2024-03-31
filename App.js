@@ -10,7 +10,7 @@ import InscriC from './screens/inscription';
 import Dashboard from './screens/dashboars';
 import Profile from './screens/profil';
 const Stack = createNativeStackNavigator();
-
+import Contactt from './screens/contact';
 export default function App() {
   return (
     <NavigationContainer>
@@ -20,6 +20,7 @@ export default function App() {
         <Stack.Screen name="registre" component={InscriC} />
         <Stack.Screen name="dash" component={Dashboard} />
         <Stack.Screen name="update" component={Profile} />
+        <Stack.Screen name="contact" component={Contactt} />
       </Stack.Navigator>
     </NavigationContainer>
   );

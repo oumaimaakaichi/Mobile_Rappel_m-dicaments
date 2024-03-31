@@ -9,16 +9,17 @@ import Hor from '../assets/hr.png'
 import logout from '../assets/logout.png';
 
 // Menu
-
 import Contact from '../assets/b.png'
+
 import menu from '../assets/menu.png';
 import close from '../assets/close.png';
-import medicament from '../assets/med.png'
-import p from '../assets/cjt.png'
 import document from '../assets/doc.png'
+import p from '../assets/cjt.png'
+import medicament from '../assets/med.png'
 import { useIsFocused } from '@react-navigation/native';
 import historique from '../assets/histo.png';
-export default function Dashboard({ navigation }) {
+import { Button } from 'react-native-paper';
+export default function Contactt({ navigation }) {
   const [currentTab, setCurrentTab] = useState("Home");
   
  
@@ -35,7 +36,7 @@ export default function Dashboard({ navigation }) {
    
        const data = await getClientData();
         setUser(data);
-        console.log("dddfd"+user.email)
+        console.log("ddddd"+user.email)
     
 
         
@@ -84,12 +85,12 @@ export default function Dashboard({ navigation }) {
         setCurrentTab(title)
       }
     }}>
-    <TouchableOpacity>
+    <TouchableOpacity onPress={() => {navigation.navigate("dash")}}>
       <View style={{
         flexDirection: "row",
         alignItems: 'center',
         paddingVertical: 8,
-        backgroundColor: 'white',
+        backgroundColor: 'transparent',
         paddingLeft: 13,
         paddingRight: 35,
         borderRadius: 8,
@@ -98,14 +99,14 @@ export default function Dashboard({ navigation }) {
 
         <Image source={home} style={{
           width: 25, height: 25,
-          tintColor: "#rgb(97, 172, 243)"
+          tintColor: "white"
         }}></Image>
 
         <Text style={{
           fontSize: 15,
           fontWeight: 'bold',
           paddingLeft: 15,
-          color: "#rgb(97, 172, 243)"
+          color: "white"
         }}>Acceuil</Text>
 
       </View>
@@ -131,8 +132,7 @@ export default function Dashboard({ navigation }) {
           fontSize: 15,
           fontWeight: 'bold',
           paddingLeft: 15,
-          color: "white",
-          
+          color: "white"
         }}>Profile</Text>
       </View>
     </TouchableOpacity>
@@ -167,7 +167,7 @@ export default function Dashboard({ navigation }) {
         flexDirection: "row",
         alignItems: 'center',
         paddingVertical: 8,
-        backgroundColor: 'transparent',
+        backgroundColor: 'white',
         paddingLeft: 13,
         paddingRight: 35,
         borderRadius: 8,
@@ -176,14 +176,14 @@ export default function Dashboard({ navigation }) {
 
         <Image source={Contact} style={{
           width: 25, height: 25,
-          tintColor: "white"
+          tintColor: "#rgb(97, 172, 243)"
         }}></Image>
 
         <Text style={{
           fontSize: 15,
           fontWeight: 'bold',
           paddingLeft: 15,
-          color: "white"
+          color: "#rgb(97, 172, 243)"
         }}>Contacts </Text>
       </View>
       </TouchableOpacity>
@@ -357,7 +357,7 @@ export default function Dashboard({ navigation }) {
          <ScrollView  horizontal={true} >
         
          
-
+<Button>Ajouter un contact</Button>
 
 
           </ScrollView>

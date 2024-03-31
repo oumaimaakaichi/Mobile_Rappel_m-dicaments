@@ -176,7 +176,7 @@ const LoginC = ({ navigation }) => {
             },
           ]}
         >
-          email
+          Email
         </Text>
         <View style={styles.action}>
         <Icon name="user" color="black"  style = {styles.icon} size={20} />

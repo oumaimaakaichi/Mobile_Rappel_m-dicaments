@@ -47,8 +47,8 @@ export default function Profile({ navigation }) {
     const fetchData = async () => {
       const data = await getClientData();
       setUser(data);
-      setAge(data.age);
-      setNumTel(data.Num_tel);
+      setAge(data?.age);
+      setNumTel(data?.Num_tel);
       setEmail(data.email);
     };
 
@@ -72,7 +72,7 @@ export default function Profile({ navigation }) {
               <TextInput
                 placeholder="Age"
                 placeholderTextColor="#c4c3cb"
-                value={user.age}
+                value={age}
                 onChangeText={text => setAge(text)}
                 style={styles.loginFormTextInput}
               />
@@ -81,7 +81,7 @@ export default function Profile({ navigation }) {
               <TextInput
                 placeholder="Numéro de téléphone"
                 placeholderTextColor="#c4c3cb"
-                value={user.Num_tel}
+                value={Num_tel}
                 keyboardType="numeric"
                 onChangeText={text => setNumTel(text)}
                 style={styles.loginFormTextInput}
