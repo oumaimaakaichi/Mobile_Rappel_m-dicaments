@@ -7,11 +7,11 @@ import { LinearGradient } from "expo-linear-gradient";
 import home from '../assets/home.png';
 import Hor from '../assets/hr.png'
 import logout from '../assets/logout.png';
-
+import { AntDesign } from '@expo/vector-icons';
 const { width: WIDTH } = Dimensions.get('window');
 // Menu
 import Contact from '../assets/b.png'
-import ListContact from './ListContact';
+import conta from '../assets/cc-removebg-preview.png';
 import menu from '../assets/menu.png';
 import close from '../assets/close.png';
 import document from '../assets/doc.png'
@@ -20,11 +20,11 @@ import medicament from '../assets/med.png'
 import { useIsFocused } from '@react-navigation/native';
 import historique from '../assets/histo.png';
 import { Button } from 'react-native-paper';
-export default function Contactt({ navigation }) {
+export default function AddContactt({ navigation }) {
   const [currentTab, setCurrentTab] = useState("Home");
   
-  const [showPopup, setShowPopup] = useState(false); // Déplacer showPopup à l'intérieur de la fonction composant
-  const [isButtonVisible, setIsButtonVisible] = useState(true); // État pour gérer la visibilité du bouton
+  const [showPopup, setShowPopup] = useState(false); 
+  const [isButtonVisible, setIsButtonVisible] = useState(true); 
 
   const [showMenu, setShowMenu] = useState(false);
  
@@ -34,17 +34,76 @@ export default function Contactt({ navigation }) {
   // Scale Intially must be One...
   const scaleValue = useRef(new Animated.Value(1)).current;
   const closeButtonOffset = useRef(new Animated.Value(0)).current;
-  const isFocused = useIsFocused();
-  let data="";
+  const [nom, setNom] = useState('');
+  const [prenom, setPrenom] = useState('');
+  const [Num_tel, setNumero] = useState('');
+  const [email, setEmail] = useState('');
+  const [adresse, setAdresse] = useState('');
+  const [spécialite, setSpecialité] = useState('');
+  const[error , setError]=useState(false);
+  const regEx = /[a-zA-Z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,8}(.[a-z{2,8}])?/g
   useEffect(async () => {
    
-        data = await getClientData();
+       const data = await getClientData();
         setUser(data);
-        console.log("ddddddd"+data?.avatar)
-        console.log("dddddd"+user)
+        console.log("dddddd"+user.email)
+    
 
         
   }, []);
+  const addContact = async () => {
+    if( !nom || !prenom ||!adresse ||!spécialite || !Num_tel||Num_tel<0 ||Num_tel.length!=8 ||(!regEx.test(email) && email!="")){
+      setError(true);
+      return false;
+        
+    }
+    try {
+      // Construire le corps de la requête avec les données du contact
+      const requestBody = JSON.stringify({
+        nom_docteur: nom,
+        Prenom_docteur: prenom,
+        num_telephone: Num_tel,
+        email: email,
+        adresse_doc: adresse,
+        Specialite_docteur: spécialite,
+        utilisateur:user._id
+      });
+  
+   
+      const response = await fetch('http://192.168.43.105:5000/api/AddContact', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        
+        },
+        body: requestBody
+      });
+  
+
+      if (response.ok) {
+      
+        
+        setNom('');
+        setPrenom('');
+        setNumero('');
+        setEmail('');
+        setAdresse('');
+        setSpecialité('');
+        navigation.navigate('contact');
+       
+      } else {
+      
+        console.error('Échec de l\'ajout du condtact.');
+
+      }
+    } catch (error) {
+     
+      console.error('Erreur lors de l\'ajout du contact:', error);
+      
+    }
+  };
+  
+
 
   return (
     <>
@@ -53,21 +112,24 @@ export default function Contactt({ navigation }) {
    
 <ScrollView style={styles.s}>
       <View style={{ justifyContent: 'flex-start', padding: 15, alignItems: 'center', marginBottom:20 }}>
-             
-      <TouchableOpacity
+      
+      
         
-          style={styles.uploadBtnContainer}
-        >
+          <Image
+            source={ p}
+            style={{
+              width: 101,
+              height: 100,
+              alignSelf:'center',
+              marginTop:30
           
-            <Image
-              source={{ uri: user?.avatar}}
-              style={{ width: '90%', height: '90%' ,marginBottom:10 }}
-            
-            />
-           
+            }}
+          
+          />
+         
+      
+     
         
-        </TouchableOpacity>
-               
       <Text style={{
           fontSize: 22,
           fontWeight: 'bold',
@@ -272,10 +334,14 @@ export default function Contactt({ navigation }) {
 
         </View>
 
+        
+
       </View>
       
       </ScrollView>
       
+     
+
       <Animated.View style={{
         flexGrow: 1,
         backgroundColor: 'white',
@@ -327,35 +393,124 @@ export default function Contactt({ navigation }) {
               useNativeDriver: true
             })
               .start()
+
             setShowMenu(!showMenu);
           }}>
+
             <Image source={showMenu ? close : menu} style={{
               width: 20,
               height: 20,
               tintColor: '#rgb(97, 172, 243)',
-              marginTop: 50,
+              marginTop: 40,
 
             }}></Image>
 
-          </TouchableOpacity>         
-          <TouchableOpacity
-    style={styles.contactButton}
-    onPress={() => {navigation.navigate("addContact")}}
-  >
+          </TouchableOpacity>
+   
+          
+         
+        <ScrollView horizontal={true}>
+    {/* Popup d'ajout de contact */}
+   
+      <View style={styles.popupContainer}>
+      <Image
+            source={ conta}
+            style={{
+              width: 190,
+              height: 140,
+              alignSelf:'center',
+              marginTop:5
+          
+            }}
+          
+          />
+          <View style={styles.inputContainer}>
+  <AntDesign name="user" color="rgb(70, 143, 183)" size={20} style={styles.icon} />
+  <TextInput
+    placeholder="Nom Docteur"
+    style={styles.input}
+    onChangeText={(val) => setNom(val)}
+  />
+</View>
+{error && !nom &&<Text style={{color:'red' ,fontSize:10 , fontWeight:'bold'}} > champ obligatoire *</Text>}
     
-    <Image
-      source={require('../assets/add.png')}
-      style={styles.contactButtonImage}
-    />
-  </TouchableOpacity>
-       <ScrollView horizontal={true}>
+<View style={styles.inputContainer}>
+  <AntDesign name="user" color="rgb(70, 143, 183)" size={20} style={styles.icon} />
+  <TextInput
+    placeholder="Prenom Docteur"
+    style={styles.input}
+    onChangeText={(val) => setPrenom(val)}
+  />
+</View>
+{error && !prenom &&<Text style={{color:'red' ,fontSize:10 , fontWeight:'bold'}} > champ obligatoire *</Text>}
+ 
+<View style={styles.inputContainer}>
+  <AntDesign name="phone" color="rgb(70, 143, 183)" size={20} style={styles.icon} />
+  <TextInput
+    placeholder="Numéro de téléphone"
+    style={styles.input}
+    onChangeText={(val) => setNumero(val)}
+  />
+</View>
+{error && !Num_tel &&<Text style={{color:'red' ,fontSize:10 , fontWeight:'bold'}} > champ obligatoire *</Text>}
+                  {error && Num_tel<0 &&<Text style={{color:'red' ,fontSize:10 , fontWeight:'bold'}} >Numéro du téléphone doit  etre positive</Text>}
+                  {error && Num_tel.length!=8 &&<Text style={{color:'red' ,fontSize:10 , fontWeight:'bold'}} >Numéro du téléphone doit  etre positive</Text>}
+                  
+<View style={styles.inputContainer}>
+  <AntDesign name="mail" color="rgb(70, 143, 183)" size={20} style={styles.icon} />
+  <TextInput
+    placeholder="Email Docteur"
+    style={styles.input}
+    onChangeText={(val) => setEmail(val)}
+  />
+</View>     
+{error && !email &&<Text style={{color:'red' ,fontSize:10 , fontWeight:'bold'}} > champ obligatoire *</Text>}
+            {error && !regEx.test(email) &&<Text style={{color:'red' ,fontSize:10 , fontWeight:'bold'}} > email invalide</Text>}
+      
+        
+       
+          
+       <View style={styles.inputContainer}>
+  <AntDesign name="home" color="rgb(70, 143, 183)" size={20} style={styles.icon} />
+  <TextInput
+    placeholder="Adresse Docteur"
+    style={styles.input}
+    onChangeText={(val) => setAdresse(val)}
+  />
   
-  
-  <View style={{marginBottom:10}}>
-  <ListContact navigation={navigation} />
-  </View>
-</ScrollView>
+</View>
+{error && !adresse &&<Text style={{color:'red' ,fontSize:10 , fontWeight:'bold'}} > champ obligatoire *</Text>}
+ 
+<View style={styles.inputContainer}>
+  <AntDesign name="user" color="rgb(70, 143, 183)" size={20} style={styles.icon} />
+  <TextInput
+    placeholder="Spécialité du Docteur"
+    style={styles.input}
+    onChangeText={(val) => setSpecialité(val)}
+  />
 
+</View>
+{error && !spécialite &&<Text style={{color:'red' ,fontSize:10 , fontWeight:'bold'}} > champ obligatoire *</Text>}
+ 
+        
+       <View style={styles.button}>
+                <TouchableOpacity
+                  style={styles.signIn}
+                  onPress={addContact}
+                >
+                  <LinearGradient
+                    colors={['rgb(97, 172, 243)', 'rgb(97, 172, 243)']}
+                    style={styles.signIn}
+                  >
+                    <Text style={[styles.textSign, { color: '#fff' }]}>Ajouter</Text>
+                  </LinearGradient>
+                </TouchableOpacity>
+              </View>
+      </View>
+    
+    {/* Votre bouton "Ajouter un contact" */}
+   
+  </ScrollView>
         </Animated.View>
         </ScrollView>
       </Animated.View>
@@ -375,27 +530,6 @@ const styles = StyleSheet.create({
     alignItems: "flex-start",
     justifyContent: "flex-start",
   },
-  contactButton: {
-    flexDirection: 'row',
-    alignItems: 'center', 
-    paddingHorizontal: 21,
-    paddingVertical: 10,
-    backgroundColor: 'transparent',
-    borderRadius: 10,
-    marginHorizontal: 10,
-  },
-  contactButtonText: {
-    color: 'black',
-    fontSize: 16,
-    fontWeight: 'bold',
-    marginRight: 10,
-  },
-  contactButtonImage: {
-    width: 30,
-    height: 30,
-    tintColor: "#rgb(97, 172, 243)",
-    marginLeft:200
-  },
   s: {
     color: "#rgb(97, 172, 243)",
     backgroundColor: "#rgb(97, 172, 243)",
@@ -403,7 +537,7 @@ const styles = StyleSheet.create({
   uploadBtnContainer: {
     height: 120,
     width: 120,
-    borderRadius: 125 / 2,
+    borderRadius: 125 / 4,
     justifyContent: "center",
     alignItems: "center",
 
@@ -413,41 +547,70 @@ const styles = StyleSheet.create({
   },
   button: {
     alignItems: "center",
-    marginTop: 50,
+    marginTop: 40,
+    borderRadius:8
   },
   signIn: {
-    width: WIDTH - 100,
-    height: 35,
+    width: WIDTH - 50,
+    height: 50,
     justifyContent: "center",
     alignItems: "center",
-    borderRadius: 25,
+   borderRadius:8,
     marginBottom: 30,
   },
   textSign: {
     fontSize: 18,
     fontWeight: "bold",
   },
+  loginFormTextInput: {
+    width: WIDTH - 55,
+    height: 45,
+    borderBottomWidth: 1,
+    borderColor: '#rgb(97, 172, 243)',
+    fontSize: 16,
+    paddingLeft: 45,
+    marginHorizontal: 25,
+    marginTop: 25,
+  },
   popupContainer: {
     backgroundColor: "white",
-    padding: 20,
-    width:300,
+    padding: 10,
+    width:282,
     borderRadius: 10,
-    elevation: 5, 
-    shadowColor: "#000", 
-    shadowOffset: { width: 0, height: 2 }, 
-    shadowOpacity: 0.25, 
-    shadowRadius: 3.84, 
+    elevation: 5, // Pour l'ombre sur Android
+    shadowColor: "#000", // Pour l'ombre sur iOS
+    shadowOffset: { width: 0, height: 2 }, // Pour l'ombre sur iOS
+    shadowOpacity: 0.25, // Pour l'ombre sur iOS
+    shadowRadius: 3.84, // Pour l'ombre sur iOS
+  },
+  inputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 0.6, // Ajoutez d'autres styles de bordure selon vos besoins
+    borderColor: 'rgb(70, 143, 183)', // Couleur de la bordure
+    borderRadius: 5, // Bordure arrondie
+    paddingHorizontal: 10, // Marge horizontale interne
+    marginTop: 20,
+    height:50 // Espacement vers le haut
+  },
+ 
+  icon: {
+    marginRight: 11, // Espacement à droite de l'icône
   },
   input: {
-    height: 40,
-    borderWidth: 1,
-    borderColor: "#ccc",
-    borderRadius: 5,
-    paddingHorizontal: 10,
-    marginBottom: 10,
+    flex: 1, // Pour que le TextInput prenne tout l'espace restant
+    height: 70, // Hauteur du TextInput
+    marginLeft: 10,
+    borderWidth: 0,
+    borderColor: "rgb(70, 143, 183)",
+    borderRadius: 8,
+    paddingHorizontal: 0,
+ 
+    
+    
   },
   buttons: {
-    backgroundColor: "#rgb(97, 172, 243)",
+    backgroundColor: "rgb(70, 143, 183)",
     padding: 10,
     borderRadius: 5,
     alignItems: "center",
@@ -455,16 +618,5 @@ const styles = StyleSheet.create({
   buttonText: {
     color: "white",
     fontWeight: "bold",
-  },
-  uploadBtnContainer: {
-    height: 120,
-    width: 120,
-    borderRadius: 125 / 2,
-    justifyContent: 'center',
-    alignItems: 'center',
-   
-    borderWidth: 0,
-    overflow: 'hidden',
-    marginTop:20,
   },
 });

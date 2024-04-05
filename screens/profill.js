@@ -1,26 +1,37 @@
-import React, { useEffect, useState } from "react";
-import { ScrollView,StyleSheet, Image, Keyboard, KeyboardAvoidingView, Text, Dimensions, TextInput, TouchableWithoutFeedback, View, TouchableOpacity } from "react-native";
+import React, { useContext, useState, useEffect } from 'react';
+import { StyleSheet, Text, View, ImageBackground, ScrollView, SafeAreaView, Image, TextInput, TouchableOpacity , Dimensions } from 'react-native';
+import { DataTable } from 'react-native-paper';
+import Ionicons from 'react-native-vector-icons/Ionicons';
+import {MaterialIcons } from '@expo/vector-icons';
 import { LinearGradient } from "expo-linear-gradient";
-import profl from '../assets/asmaaa.png';
-import { getClientData, updateClientData } from "../utils/AsyncStorageClient";
 import { AntDesign } from '@expo/vector-icons'; 
-const { width: WIDTH } = Dimensions.get('window');
-
-export default function Profile({ navigation }) {
-  const [user, setUser] = useState('');
+const { width: WIDTH } = Dimensions.get('window')
+import conta from '../assets/asmaaa.png'
+const {height:HEIGHT} =Dimensions.get('window')
+import { getClientData, updateClientData } from "../utils/AsyncStorageClient";
+export default function Profiil({navigation }) {
+    const [user, setUser] = useState('');
   const [age, setAge] = useState('');
   const [Num_tel, setNumTel] = useState('');
   const [email, setEmail] = useState('');
   const [error, setError] = useState(false);
+  useEffect(() => {
+    const fetchData = async () => {
+      const data = await getClientData();
+      setUser(data);
+      setAge(data?.age);
+      setNumTel(data?.Num_tel);
+      setEmail(data.email);
+    };
 
-  const regEx = /[a-zA-Z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,8}(.[a-z{2,8}])?/g
+    fetchData();
+  }, []);
   const editProfile = async () => {
-   
-    if( !age || age<0 || !Num_tel||Num_tel<0 ||Num_tel.length!=8 ||(!regEx.test(email) && email!="")){
+    if (!age || !Num_tel || Num_tel < 0 || Num_tel.length !== 8 || (!validateEmail(email) && email !== "")) {
       setError(true);
       return false;
-        
     }
+
     try {
       const res = await fetch(`http://192.168.43.105:5000/api/utlisateur/modifier/${user?._id}`, {
         method: "PUT",
@@ -39,37 +50,21 @@ export default function Profile({ navigation }) {
 
       const newUser = { ...user, age, Num_tel, email };
       await updateClientData(newUser);
-      alert('succèss');
+      console.log('succèss');
     } catch (error) {
       console.log('erreur', error);
     }
   };
 
-  useEffect(async() => {
-    
-      const data = await getClientData();
-      setUser(data);
-      setAge(data?.age);
-      setNumTel(data?.Num_tel);
-      setEmail(data?.email);
+    return (
 
-
-    fetchData();
-  }, []);
-
-  const validateEmail = (email) => {
-    const regex = /[a-zA-Z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,8}(.[a-z{2,8}])?/g;
-    return regex.test(email);
-  };
-
-  return (
-    <View style={{ backgroundColor: '#FFFFFF' }}>
-      <ScrollView>
-      <View style={styles.popupContainer}>
+        <SafeAreaView style={{ height:HEIGHT,}}>
+            <ScrollView >                    
+            <View style={styles.popupContainer}>
       <Image
-            source={ profl}
+            source={ conta}
             style={{
-              width: 250,
+              width: 190,
               height: 140,
               alignSelf:'center',
               marginTop:5
@@ -82,37 +77,30 @@ export default function Profile({ navigation }) {
   <TextInput
     placeholder="Numéro de téléphone"
     style={styles.input}
-    defaultValue={Num_tel}
+    defaultValue={user?.Num_tel}
     onChangeText={(val) => setNumTel(val)}
   />
 </View>
-{error && !Num_tel &&<Text style={{color:'red' ,fontSize:10 , fontWeight:'bold'}} > champ obligatoire *</Text>}
-                  {error && Num_tel<0 &&<Text style={{color:'red' ,fontSize:10 , fontWeight:'bold'}} >Numéro du téléphone doit  etre positive</Text>}
-                  {error && Num_tel.length!=8 &&<Text style={{color:'red' ,fontSize:10 , fontWeight:'bold'}} >Numéro du téléphone doit  etre positive</Text>}
-      
 <View style={styles.inputContainer}>
   <AntDesign name="mail" color="rgb(70, 143, 183)" size={20} style={styles.icon} />
   <TextInput
-    placeholder="Email "
+    placeholder="Email Docteur"
     style={styles.input}
-    defaultValue={email}
+    defaultValue={user?.email}
     onChangeText={(val) => setEmail(val)}
   />
 </View>     
-{error && !email &&<Text style={{color:'red' ,fontSize:10 , fontWeight:'bold'}} > champ obligatoire *</Text>}
-            {error && !regEx.test(email) &&<Text style={{color:'red' ,fontSize:10 , fontWeight:'bold'}} > email invalide</Text>}
-       
+        
        <View style={styles.inputContainer}>
   <AntDesign name="user" color="rgb(70, 143, 183)" size={20} style={styles.icon} />
   <TextInput
     placeholder="Age"
     style={styles.input}
-    defaultValue={age}
+    defaultValue={user?.age}
     onChangeText={(val) => setAge(val)}
   />
 </View>
-{error && !age &&<Text style={{color:'red' ,fontSize:10 , fontWeight:'bold'}} > champ obligatoire *</Text>}
-                  
+        
        <View style={styles.button}>
                 <TouchableOpacity
                   style={styles.signIn}
@@ -127,44 +115,24 @@ export default function Profile({ navigation }) {
                 </TouchableOpacity>
               </View>
       </View>
-      </ScrollView>
-    </View>
-  );
+         
+            </ScrollView>
+        </SafeAreaView>
+    );
 }
 
 const styles = StyleSheet.create({
-  containerView: {
-    flex: 1,
-  },
-  loginScreenContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  imageStyle: {
-    width: 300,
-    height: 300,
-    alignSelf: 'center',
-    
-  },
-  loginFormTextInput: {
-    width: WIDTH - 55,
-    height: 45,
-    borderBottomWidth: 1,
-    borderColor: '#rgb(97, 172, 243)',
-    fontSize: 16,
-    paddingLeft: 45,
-    marginHorizontal: 25,
-    marginTop: 25,
-  },
- 
- 
-  errorText: {
-    color: 'red',
-    fontSize: 10,
-    fontWeight: 'bold',
-  },
-  popupContainer: {
+    container: {
+        paddingTop: 25,
+        backgroundColor:'beige'
+      
+      },
+   
+   f:{
+      fontStyle:'italic',
+      color:'red'
+   },
+   popupContainer: {
     backgroundColor: "white",
     padding: 10,
     width:WIDTH - 20,
@@ -232,4 +200,6 @@ const styles = StyleSheet.create({
     marginTop: 25,
   },
    
+   
+
 });

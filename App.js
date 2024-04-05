@@ -11,6 +11,10 @@ import Dashboard from './screens/dashboars';
 import Profile from './screens/profil';
 const Stack = createNativeStackNavigator();
 import Contactt from './screens/contact';
+import AddContactt from './screens/AddContact';
+import OneContact from './screens/OneContact';
+import UpdateContact from './screens/updateContact';
+import Profiil from './screens/updateContact';
 export default function App() {
   return (
     <NavigationContainer>
@@ -21,6 +25,9 @@ export default function App() {
         <Stack.Screen name="dash" component={Dashboard} />
         <Stack.Screen name="update" component={Profile} />
         <Stack.Screen name="contact" component={Contactt} />
+        <Stack.Screen name="addContact" component={AddContactt} />
+        <Stack.Screen name="OneContact" component={OneContact} />
+        <Stack.Screen name="UpdateContact" component={UpdateContact} />
       </Stack.Navigator>
     </NavigationContainer>
   );

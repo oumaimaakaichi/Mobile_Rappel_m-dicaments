@@ -17,11 +17,12 @@ const {width:WIDTH} =Dimensions.get('window')
 import * as Animatable from "react-native-animatable";
 import { LinearGradient } from "expo-linear-gradient";
 import * as ImagePicker from 'expo-image-picker';
-import * as FileSystem from 'expo-file-system';
+import Toast from 'react-native-toast-message';
 import Feather from "react-native-vector-icons/Feather";
+import axios from 'axios';
 import { useTheme } from "react-native-paper";
 import Icon from 'react-native-vector-icons/Feather';
-
+import * as FilesSystem from 'expo-file-system';
 const InscriC = ({ navigation }) => {
   
       const [data, setData] = React.useState({
@@ -65,38 +66,34 @@ const InscriC = ({ navigation }) => {
   const [avatar, setAvatar] = useState('');
   const [avatarFile, setAvatarFile] = useState();
     const regEx = /[a-zA-Z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,8}(.[a-z{2,8}])?/g
-    const uriToFile = async (uri) => {
-      const fileInfo = await FileSystem.getInfoAsync(uri);
-      const file = {
-        uri: uri,
-        name: fileInfo.uri.split('/').pop(),
-        type: 'image/jpeg', 
-      };
-      return file;
-    };
+   
     
     const openImageLibrary = async () => {
       const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    
+  
       if (status === 'granted') {
         const response = await ImagePicker.launchImageLibraryAsync({
           mediaTypes: ImagePicker.MediaTypeOptions.Images,
           allowsEditing: true,
-          aspect: [4, 3],
-          quality: 1,
-          base64: true
+          aspect : [4,3],
+          quality:1,
+          base64 : true
         });
-    
+       
         if (!response.cancelled) {
-          setAvatar(response.uri);
-          const file = await uriToFile(response.uri);
-          setAvatarFile(file); // Stockez l'objet File
+          console.log(response.assets[0].uri)
+          setAvatar(response.assets[0].uri);
+          FilesSystem.uploadAsync('http://192.168.43.105:5000/api/utlisateur/upload-avatar', response.assets[0].uri, {
+            fieldName : "avatar",
+            uploadType : FilesSystem.FileSystemUploadType.MULTIPART
+          }).then((res)=> setAvatarFile(res.body) )
         }
       }
     };
+  
     
     const AddClient = async () => {
-      // Vérifiez si le formulaire est valide avant de soumettre
+      console.log("file"+avatarFile)
       if (!password || !email || !nom || !prenom || !Num_tel || Num_tel < 0 || password.length < 6 || Num_tel.length != 8 || (!regEx.test(email) && email != "")) {
         setError(true);
         return false;
@@ -104,8 +101,7 @@ const InscriC = ({ navigation }) => {
     
       try {
         const formData = new FormData();
-        formData.append('avatar', avatarFile); // Ajoutez l'objet File à FormData
-    
+      
         formData.append('nom', nom);
         formData.append('prenom', prenom);
         formData.append('Num_tel', Num_tel);
@@ -113,25 +109,56 @@ const InscriC = ({ navigation }) => {
         formData.append('password', password);
         formData.append('age', age);
         formData.append('nbr_enfants', nbr_enfants);
-    
+        formData.append('avatar', avatarFile);
         const response = await fetch("http://192.168.43.105:5000/api/utlisateur/add-user", {
           method: 'POST',
           headers: {
-            "Content-Type": 'multipart/form-data', // Utilisez multipart/form-data pour envoyer des fichiers
+            "Content-Type": 'multipart/form-data',
           },
-          body: formData, // Envoyez FormData avec toutes les données du formulaire
+          body: formData,
         });
     
         const data = await response.json();
-        if (data.Adr !== '' && data.MPass !== '') {
+        if (data.email !== '' && data.password !== '') {
           navigation.navigate('welcome');
-          console.log("ajouter avec succès");
+          console.log("ajouter avec suctcès");
         }
       } catch (error) {
         console.log(error);
       }
     };
-
+    
+    function Add() {
+     
+      console.log(avatarFile);
+      
+  
+      const data =  {
+        nom,
+        prenom,
+        age,
+        Num_tel, 
+        email, 
+        password, 
+        avatar : avatarFile,
+        nbr_enfants
+      }
+      
+  
+      axios.post("http://192.168.43.105:5000/api/utlisateur/add-user", data)
+        .then( ({data}) => {
+          if (data) {
+            if (data.email != '' && data.password != '') {
+              
+             console.log("suycc")
+            }
+          }
+        })
+        .catch(err => {
+         
+          console.log(err.response)
+        });
+    }
   
   return (
     <ImageBackground
@@ -141,6 +168,7 @@ const InscriC = ({ navigation }) => {
     <View style={styles.container}>
     <ScrollView   showsVerticalScrollIndicator={false}
     >
+       <Toast />
           
       <StatusBar backgroundColor="white"  />
      
@@ -166,7 +194,7 @@ const InscriC = ({ navigation }) => {
                             {avatar ? (
                                 <Image
                                     source={{ uri: avatar }} // Utilisez l'URI de l'image sélectionnée
-                                    style={{ width: '100%', height: '100%' }}
+                                    style={{ width: '70%', height: '100%' }}
                                 />
                             ) : (
                                 <Text style={styles.uploadBtn}  onChangeText={(text) => setProfileImage(text)}>Cliquer pour choisir une image</Text>
