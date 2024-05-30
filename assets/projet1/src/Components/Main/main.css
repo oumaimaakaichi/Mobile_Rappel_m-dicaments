@@ -1,0 +1,145 @@
+:root {
+  --PrimaryColor: hsl(199,100%,33%);
+  --SecondaryColor: hsl(187,85%,43%);
+  --gradientColor: linear-gradien( to right, hsl(187,85%,43%),hsl(199,100%,33%));
+  --whiteColor: hsl(0, 0%, 61%);
+  --blackColor: hsl(201,33%,16%);
+  --textColor: hsl(240,4%,36%);
+  --whiteColorDeam: hsl(0, 0%, 66%);
+  --greyText: rgb(190,190,190);
+  --inputColor: rgb(146, 146, 148);
+  --bodyColor: rgb(94, 94, 94);
+  --cardBG: rgb(124, 124, 124);
+}
+
+.main {
+  max-width: 60%;
+  min-width: none;
+  max-height: 70%;
+  min-height: none;
+  margin: 1rem 10rem;
+}
+
+.main .secTitle .title {
+  position: relative;
+  width: -moz-max-content;
+  width: max-content;
+  color: var(--textColor);
+  margin: 1rem 0;
+  z-index: 2;
+}
+
+.main .secTitle .title::after {
+  position: absolute;
+  content: "";
+  background: var(--SecondaryColor);
+  height: 0.5px;
+  width: 0.12px;
+  bottom: 0.5px;
+  z-index: -1;
+}
+
+.main .secContent .singleDestination {
+  height: 100%;
+  row-gap: 10px;
+  border-radius: 20px;
+  background: var(--cardBG);
+}
+
+.main .secContent .singleDestination:hover {
+  background: var(--cardHover);
+  box-shadow: 1 4px 4px rgba(71, 71, 71, 0.549);
+  transition: 0.3s ease;
+}
+
+.main .secContent .singleDestination .imageDiv {
+  height: 80px;
+  width: 80%;
+}
+
+.main .secContent .singleDestination .imageDiv img {
+  height: 100%;
+  width: 50%;
+  -o-object-fit: cover;
+  object-fit: cover;
+  transition: 2s ease;
+}
+
+.main .secContent .singleDestination .imageDiv:hover img {
+  transform: scale(1.9);
+}
+
+.main .secContent .singleDestination .cardInfo {
+  padding: 1rem;
+}
+
+.main .secContent .singleDestination .cardInfo .destTitle {
+  color: var(--blackColor);
+  font-size: 1.25rem;
+}
+
+.main .secContent .singleDestination .cardInfo .continent {
+  gap: 0.5rem;
+}
+
+.main .secContent .singleDestination .cardInfo .continent .icon {
+  color: var(--textColor);
+  font-size: 18px;
+}
+
+.main .secContent .singleDestination .cardInfo .continent .name {
+  color: var(--textColor);
+  font-weight: 400;
+  font-size: 14px;
+}
+
+.main .secContent .singleDestination .cardInfo .fees {
+  width: 100%;
+  justify-content: space-between;
+  padding: 1rem;
+  margin: 1rem 0;
+  border-top: 2px solid var(--greyText);
+  border-bottom: 2px solid var(--greyText);
+}
+
+.main .secContent .singleDestination .cardInfo .fees .grade {
+  color: var(--textColor);
+  max-width: 100px;
+  line-height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.main .secContent .singleDestination .cardInfo .fees .price {
+  font-size: 1.5rem;
+  color: var(--blackColor);
+}
+
+.main .secContent .singleDestination .cardInfo .desc {
+  font-size: 13.5px;
+  color: var(--textColor);
+  font-weight: 500;
+}
+
+.main .secContent .singleDestination .cardInfo .btn {
+  margin-top: 1rem;
+  color: var(--blackColor);
+  font-weight: 900;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.9rem 1rem;
+  background: var(--gradientColor);
+  border-radius: 0.9rem;
+  border: none;
+  outline: none;
+  cursor: pointer;
+  
+}
+.main .secContent .singleDestination .cardInfo .btn:hover {
+  background-color: var(--SecondaryColor);
+}
+.main .secContent .singleDestination .cardInfo .btn .icon {
+  align-self: center;
+  font-size: 30px;
+} /*# sourceMappingURL=main.css.map */

@@ -1,19 +1,30 @@
-import React, { useContext, useState, useEffect } from 'react';
-import { StyleSheet, Text, View, ImageBackground, ScrollView, SafeAreaView, Image, TextInput, TouchableOpacity , Dimensions } from 'react-native';
-import { DataTable } from 'react-native-paper';
-import Ionicons from 'react-native-vector-icons/Ionicons';
-import {MaterialIcons } from '@expo/vector-icons';
+import React, { useContext, useState, useEffect } from "react";
+import {
+  StyleSheet,
+  Text,
+  View,
+  ImageBackground,
+  ScrollView,
+  SafeAreaView,
+  Image,
+  TextInput,
+  TouchableOpacity,
+  Dimensions,
+} from "react-native";
+import { DataTable } from "react-native-paper";
+import Ionicons from "react-native-vector-icons/Ionicons";
+import { MaterialIcons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
-import { AntDesign } from '@expo/vector-icons'; 
-const { width: WIDTH } = Dimensions.get('window')
-import conta from '../assets/asmaaa.png'
-const {height:HEIGHT} =Dimensions.get('window')
+import { AntDesign } from "@expo/vector-icons";
+const { width: WIDTH } = Dimensions.get("window");
+import conta from "../assets/asmaaa.png";
+const { height: HEIGHT } = Dimensions.get("window");
 import { getClientData, updateClientData } from "../utils/AsyncStorageClient";
-export default function Profiil({navigation }) {
-    const [user, setUser] = useState('');
-  const [age, setAge] = useState('');
-  const [Num_tel, setNumTel] = useState('');
-  const [email, setEmail] = useState('');
+export default function Profiil({ navigation }) {
+  const [user, setUser] = useState("");
+  const [age, setAge] = useState("");
+  const [Num_tel, setNumTel] = useState("");
+  const [email, setEmail] = useState("");
   const [error, setError] = useState(false);
   useEffect(() => {
     const fetchData = async () => {
@@ -27,162 +38,177 @@ export default function Profiil({navigation }) {
     fetchData();
   }, []);
   const editProfile = async () => {
-    if (!age || !Num_tel || Num_tel < 0 || Num_tel.length !== 8 || (!validateEmail(email) && email !== "")) {
+    if (
+      !age ||
+      !Num_tel ||
+      Num_tel < 0 ||
+      Num_tel.length !== 8 ||
+      (!validateEmail(email) && email !== "")
+    ) {
       setError(true);
       return false;
     }
 
     try {
-      const res = await fetch(`http://192.168.43.105:5000/api/utlisateur/modifier/${user?._id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": 'application/json',
-        },
-        body: JSON.stringify({
-          age,
-          Num_tel,
-          email
-        })
-      });
+      const res = await fetch(
+        `http://192.168.43.116:5000/api/utlisateur/modifier/${user?._id}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            age,
+            Num_tel,
+            email,
+          }),
+        }
+      );
 
       const data = await res.json();
       console.log(data);
 
       const newUser = { ...user, age, Num_tel, email };
       await updateClientData(newUser);
-      console.log('succèss');
+      console.log("succèss");
     } catch (error) {
-      console.log('erreur', error);
+      console.log("erreur", error);
     }
   };
 
-    return (
-
-        <SafeAreaView style={{ height:HEIGHT,}}>
-            <ScrollView >                    
-            <View style={styles.popupContainer}>
-      <Image
-            source={ conta}
+  return (
+    <SafeAreaView style={{ height: HEIGHT }}>
+      <ScrollView>
+        <View style={styles.popupContainer}>
+          <Image
+            source={conta}
             style={{
               width: 190,
               height: 140,
-              alignSelf:'center',
-              marginTop:5
-          
+              alignSelf: "center",
+              marginTop: 5,
             }}
-          
           />
-<View style={styles.inputContainer}>
-  <AntDesign name="phone" color="rgb(70, 143, 183)" size={20} style={styles.icon} />
-  <TextInput
-    placeholder="Numéro de téléphone"
-    style={styles.input}
-    defaultValue={user?.Num_tel}
-    onChangeText={(val) => setNumTel(val)}
-  />
-</View>
-<View style={styles.inputContainer}>
-  <AntDesign name="mail" color="rgb(70, 143, 183)" size={20} style={styles.icon} />
-  <TextInput
-    placeholder="Email Docteur"
-    style={styles.input}
-    defaultValue={user?.email}
-    onChangeText={(val) => setEmail(val)}
-  />
-</View>     
-        
-       <View style={styles.inputContainer}>
-  <AntDesign name="user" color="rgb(70, 143, 183)" size={20} style={styles.icon} />
-  <TextInput
-    placeholder="Age"
-    style={styles.input}
-    defaultValue={user?.age}
-    onChangeText={(val) => setAge(val)}
-  />
-</View>
-        
-       <View style={styles.button}>
-                <TouchableOpacity
-                  style={styles.signIn}
-                  onPress={editProfile}
-                >
-                  <LinearGradient
-                    colors={['rgb(97, 172, 243)', 'rgb(97, 172, 243)']}
-                    style={styles.signIn}
-                  >
-                    <Text style={[styles.textSign, { color: '#fff' }]}>Mettre à jour</Text>
-                  </LinearGradient>
-                </TouchableOpacity>
-              </View>
-      </View>
-         
-            </ScrollView>
-        </SafeAreaView>
-    );
+          <View style={styles.inputContainer}>
+            <AntDesign
+              name="phone"
+              color="rgb(70, 143, 183)"
+              size={20}
+              style={styles.icon}
+            />
+            <TextInput
+              placeholder="Numéro de téléphone"
+              style={styles.input}
+              defaultValue={user?.Num_tel}
+              onChangeText={(val) => setNumTel(val)}
+            />
+          </View>
+          <View style={styles.inputContainer}>
+            <AntDesign
+              name="mail"
+              color="rgb(70, 143, 183)"
+              size={20}
+              style={styles.icon}
+            />
+            <TextInput
+              placeholder="Email Docteur"
+              style={styles.input}
+              defaultValue={user?.email}
+              onChangeText={(val) => setEmail(val)}
+            />
+          </View>
+
+          <View style={styles.inputContainer}>
+            <AntDesign
+              name="user"
+              color="rgb(70, 143, 183)"
+              size={20}
+              style={styles.icon}
+            />
+            <TextInput
+              placeholder="Age"
+              style={styles.input}
+              defaultValue={user?.age}
+              onChangeText={(val) => setAge(val)}
+            />
+          </View>
+
+          <View style={styles.button}>
+            <TouchableOpacity style={styles.signIn} onPress={editProfile}>
+              <LinearGradient
+                colors={["rgb(97, 172, 243)", "rgb(97, 172, 243)"]}
+                style={styles.signIn}
+              >
+                <Text style={[styles.textSign, { color: "#fff" }]}>
+                  Mettre à jour
+                </Text>
+              </LinearGradient>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </ScrollView>
+    </SafeAreaView>
+  );
 }
 
 const styles = StyleSheet.create({
-    container: {
-        paddingTop: 25,
-        backgroundColor:'beige'
-      
-      },
-   
-   f:{
-      fontStyle:'italic',
-      color:'red'
-   },
-   popupContainer: {
+  container: {
+    paddingTop: 25,
+    backgroundColor: "beige",
+  },
+
+  f: {
+    fontStyle: "italic",
+    color: "red",
+  },
+  popupContainer: {
     backgroundColor: "white",
     padding: 10,
-    width:WIDTH - 20,
-    alignSelf:'center',
+    width: WIDTH - 20,
+    alignSelf: "center",
     borderRadius: 10,
-    elevation: 5, 
-    shadowColor: "#000", 
-    shadowOffset: { width: 0, height: 2 }, 
-    shadowOpacity: 0.25, 
+    elevation: 5,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
     shadowRadius: 3.84,
-    marginTop:80
-    
+    marginTop: 80,
   },
   inputContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    alignSelf:'center',
-    borderWidth: 0.6, 
-    borderColor: 'rgb(70, 143, 183)',
-    borderRadius: 5, 
+    flexDirection: "row",
+    alignItems: "center",
+    alignSelf: "center",
+    borderWidth: 0.6,
+    borderColor: "rgb(70, 143, 183)",
+    borderRadius: 5,
     paddingHorizontal: 10,
     marginTop: 20,
-    height:50 ,
-   
+    height: 50,
   },
- 
+
   icon: {
-    marginRight: 11, 
+    marginRight: 11,
   },
   input: {
-    flex: 1, 
-    height: 70, 
+    flex: 1,
+    height: 70,
     marginLeft: 10,
     borderWidth: 0,
     borderColor: "rgb(70, 143, 183)",
     borderRadius: 8,
     paddingHorizontal: 0,
- 
   },
   button: {
     alignItems: "center",
     marginTop: 40,
-    borderRadius:8
+    borderRadius: 8,
   },
   signIn: {
     width: WIDTH - 50,
     height: 50,
     justifyContent: "center",
     alignItems: "center",
-   borderRadius:8,
+    borderRadius: 8,
     marginBottom: 30,
   },
   textSign: {
@@ -193,13 +219,10 @@ const styles = StyleSheet.create({
     width: WIDTH - 55,
     height: 45,
     borderBottomWidth: 1,
-    borderColor: '#rgb(97, 172, 243)',
+    borderColor: "#rgb(97, 172, 243)",
     fontSize: 16,
     paddingLeft: 45,
     marginHorizontal: 25,
     marginTop: 25,
   },
-   
-   
-
 });

@@ -54,7 +54,7 @@ const Modifier = ({ route }) => {
   const updateRendezVous = async () => {
     try {
       const response = await fetch(
-        `http://192.168.1.20:5000/api/rendezVous/modifRendez-vous/${rendezVous._id}`,
+        `http://192.168.43.116:5000/api/rendezVous/modifRendez-vous/${rendezVous._id}`,
         {
           method: "PUT",
           headers: {
@@ -73,7 +73,7 @@ const Modifier = ({ route }) => {
 
       if (response.ok) {
         console.log("Rendez-vous modifié avec succès!");
-        navigation.navigate("DetailleRendezvous");
+        navigation.navigate("AllRendez_vous");
       } else {
         console.error("Erreur lors de la modification du rendez-vous.");
       }
@@ -97,6 +97,7 @@ const Modifier = ({ route }) => {
               fontSize: 24,
               textAlign: "center",
               marginVertical: 20,
+              color: "#01BACF",
             }}
           >
             Nouveau Rendez-vous
@@ -106,7 +107,7 @@ const Modifier = ({ route }) => {
             <TextInput
               style={{
                 borderWidth: 1,
-                borderColor: "gray",
+                borderColor: "#01BACF",
                 borderRadius: 5,
                 padding: 10,
               }}
@@ -120,7 +121,7 @@ const Modifier = ({ route }) => {
             <TextInput
               style={{
                 borderWidth: 1,
-                borderColor: "gray",
+                borderColor: "#01BACF",
                 borderRadius: 5,
                 padding: 10,
               }}
@@ -134,7 +135,7 @@ const Modifier = ({ route }) => {
             <TextInput
               style={{
                 borderWidth: 1,
-                borderColor: "gray",
+                borderColor: "#01BACF",
                 borderRadius: 5,
                 padding: 10,
               }}
@@ -154,7 +155,7 @@ const Modifier = ({ route }) => {
                 style={{
                   flex: 1,
                   borderWidth: 1,
-                  borderColor: "gray",
+                  borderColor: "#01BACF",
                   borderRadius: 5,
                   padding: 10,
                 }}
@@ -162,7 +163,7 @@ const Modifier = ({ route }) => {
                 value={date.toLocaleDateString("fr-FR")}
                 editable={false}
               />
-              <Icon name="calendar" size={20} color="black" />
+              <Icon name="calendar" size={20} color="#01BACF" />
             </TouchableOpacity>
 
             {showDatePicker && (
@@ -190,7 +191,7 @@ const Modifier = ({ route }) => {
                 style={{
                   flex: 1,
                   borderWidth: 1,
-                  borderColor: "gray",
+                  borderColor: "#01BACF",
                   borderRadius: 5,
                   padding: 10,
                 }}
@@ -198,7 +199,7 @@ const Modifier = ({ route }) => {
                 value={heure}
                 editable={false}
               />
-              <Icon name="clock" size={20} color="black" />
+              <Icon name="clock" size={20} color="#01BACF" />
             </TouchableOpacity>
 
             {showTimePicker && (
@@ -275,7 +276,7 @@ const styles = StyleSheet.create({
     paddingVertical: 20,
   },
   form: {
-    backgroundColor: "#FFFFFF",
+    backgroundColor: "#fff",
     borderRadius: 10,
     padding: 20,
     elevation: 5,

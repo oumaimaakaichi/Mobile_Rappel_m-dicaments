@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "MonProjet1",
-    "slug": "MonProjet1",
+    "slug": "m-push-notifications",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -20,11 +20,20 @@
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
+        "backgroundColor": "#ffffff",
+        "permissions": [
+          "NOTIFICATIONS"
+        ]
       }
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "extra": {
+      "eas": {
+        "projectId": "2cabd58e-13b7-4adc-bcd2-ea8675f091ce"
+      }
+    },
+    "owner": "lamyoucha"
   }
 }

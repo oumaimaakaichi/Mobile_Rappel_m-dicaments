@@ -20,7 +20,10 @@ import Hor from "../assets/hr.png";
 import logout from "../assets/logout.png";
 
 // Menu
-
+import enfant1 from "../assets/enfant.png";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import cland from "../assets/clandr.png";
+import list from "../assets/hihi.png";
 import Contact from "../assets/b.png";
 import menu from "../assets/menu.png";
 import close from "../assets/close.png";
@@ -30,6 +33,7 @@ import rendez from "../assets/rendez.avif";
 import document from "../assets/doc.png";
 import { useIsFocused } from "@react-navigation/native";
 import historique from "../assets/histo.png";
+import { useRoute } from "@react-navigation/native";
 
 import DetailleRendezvous from "./detailleRendez-vous";
 export default function AllRendez_vous({ navigation }) {
@@ -42,9 +46,19 @@ export default function AllRendez_vous({ navigation }) {
   // Scale Intially must be One...
   const scaleValue = useRef(new Animated.Value(1)).current;
   const closeButtonOffset = useRef(new Animated.Value(0)).current;
-  const isFocused = useIsFocused();
+  const [rendezVousList, setRendezVousList] = useState([]);
   const [data, setData] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
+  const isFocused = useIsFocused();
+
+  const route = useRoute();
+  useEffect(() => {
+    if (route.params && route.params.updatedList) {
+      // Mettre à jour la liste avec les données fournies
+      setRendezVousList(route.params.updatedList);
+    }
+  }, [route.params]);
+
   useEffect(() => {
     const fetchData = async () => {
       const data = await getClientData();
@@ -63,7 +77,7 @@ export default function AllRendez_vous({ navigation }) {
       try {
         setIsLoading(true);
         const response = await axios.get(
-          "http://192.168.1.20:5000/api/rendezVous/getRendez-vous"
+          "http://192.168.43.116:5000/api/rendezVous/getRendez-vous"
         );
         setData(response.data);
         setIsLoading(false);
@@ -92,16 +106,43 @@ export default function AllRendez_vous({ navigation }) {
       <TouchableOpacity onPress={navigateToDetails}>
         <View style={styles.item}>
           <Image
-            source={require("../assets/cland.png")}
-            style={{ width: 50, height: 50, marginRight: 10 }}
+            source={require("../assets/get.png")}
+            style={{ width: 80, height: 70, marginRight: 10 }}
           />
-          <Text style={styles.title}>
+          {/*<Text style={styles.title}>
             Date de prochain rendezVous : {"\n"} {formattedDate}
             {"\n"} l'heure de rendezVous : {item.heure}
+    </Text>*/}
+          <Text style={styles.title}>
+            <Text style={styles.whiteText}>
+              Date de prochain rendezVous : {"\n"}{" "}
+              <Text style={styles.blackText}>{formattedDate}</Text>
+            </Text>
+            {"\n"} l'heure de rendezVous :{" "}
+            <Text style={styles.blackText}>{item.heure}</Text>
           </Text>
         </View>
       </TouchableOpacity>
     );
+  };
+  const logoutUser = async () => {
+    try {
+      // Nettoyer les données d'authentification dans AsyncStorage
+      await AsyncStorage.removeItem("userData");
+
+      // Effacer les données saisies précédemment dans le stockage local
+      await AsyncStorage.removeItem("email");
+      await AsyncStorage.removeItem("password");
+
+      // Réinitialiser les valeurs des champs de formulaire
+      setEmail("");
+      setPassword("");
+
+      // Rediriger l'utilisateur vers la page de connexion
+      navigation.navigate("LoginC");
+    } catch (error) {
+      console.error("Erreur lors de la déconnexion :", error);
+    }
   };
 
   return (
@@ -116,15 +157,12 @@ export default function AllRendez_vous({ navigation }) {
               marginBottom: 20,
             }}
           >
-            <Image
-              source={p}
-              style={{
-                width: 100,
-                height: 100,
-                alignSelf: "center",
-                marginTop: 10,
-              }}
-            />
+            <TouchableOpacity style={styles.uploadBtnContainer}>
+              <Image
+                source={{ uri: user?.Data?.avatar }}
+                style={{ width: "100%", height: "100%" }}
+              />
+            </TouchableOpacity>
 
             <Text
               style={{
@@ -134,7 +172,7 @@ export default function AllRendez_vous({ navigation }) {
                 marginTop: 20,
               }}
             >
-              {user.nom} {user.prenom}
+              {user?.Data?.nom} {user?.Data?.prenom}
             </Text>
 
             <View style={{ flexGrow: 1, marginTop: 20 }}>
@@ -152,11 +190,12 @@ export default function AllRendez_vous({ navigation }) {
                       flexDirection: "row",
                       alignItems: "center",
                       paddingVertical: 8,
-                      backgroundColor: "white",
+                      backgroundColor: "transparent",
                       paddingLeft: 13,
                       paddingRight: 35,
+
                       borderRadius: 8,
-                      marginTop: 30,
+                      marginTop: 10,
                     }}
                   >
                     <Image
@@ -164,7 +203,7 @@ export default function AllRendez_vous({ navigation }) {
                       style={{
                         width: 25,
                         height: 25,
-                        tintColor: "#rgb(97, 172, 243)",
+                        tintColor: "#fff",
                       }}
                     ></Image>
 
@@ -173,7 +212,7 @@ export default function AllRendez_vous({ navigation }) {
                         fontSize: 15,
                         fontWeight: "bold",
                         paddingLeft: 15,
-                        color: "#rgb(97, 172, 243)",
+                        color: "#fff",
                       }}
                     >
                       Acceuil
@@ -221,7 +260,7 @@ export default function AllRendez_vous({ navigation }) {
 
                 <TouchableOpacity
                   onPress={() => {
-                    navigation.navigate("reservationConfirmé");
+                    navigation.navigate("docc");
                   }}
                 >
                   <View
@@ -297,7 +336,86 @@ export default function AllRendez_vous({ navigation }) {
                 </TouchableOpacity>
                 <TouchableOpacity
                   onPress={() => {
-                    navigation.navigate("Medicament");
+                    navigation.navigate("Medicament", { user: user });
+                  }}
+                >
+                  <View
+                    style={{
+                      flexDirection: "row",
+                      alignItems: "center",
+                      paddingVertical: 8,
+                      backgroundColor: "transparent",
+                      paddingLeft: 13,
+                      paddingRight: 35,
+
+                      borderRadius: 8,
+                      marginTop: 10,
+                    }}
+                  >
+                    <Image
+                      source={cland}
+                      style={{
+                        width: 35,
+                        height: 35,
+                        tintColor: "#fff",
+                      }}
+                    ></Image>
+
+                    <Text
+                      style={{
+                        fontSize: 15,
+                        fontWeight: "bold",
+
+                        color: "white",
+                      }}
+                    >
+                      Ajouter rendez-vous{" "}
+                    </Text>
+                  </View>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  onPress={() => {
+                    navigation.navigate("AllRendez_vous");
+                  }}
+                >
+                  <View
+                    style={{
+                      flexDirection: "row",
+                      alignItems: "center",
+                      paddingVertical: 8,
+                      backgroundColor: "white",
+                      paddingLeft: 13,
+                      paddingRight: 35,
+                      borderRadius: 8,
+                      marginTop: 30,
+                    }}
+                  >
+                    <Image
+                      source={list}
+                      style={{
+                        width: 35,
+                        height: 35,
+                        tintColor: "#rgb(97, 172, 243)",
+                      }}
+                    ></Image>
+
+                    <Text
+                      style={{
+                        fontSize: 15,
+                        fontWeight: "bold",
+
+                        color: "#rgb(97, 172, 243)",
+                      }}
+                    >
+                      Rendez-vous{" "}
+                    </Text>
+                  </View>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  onPress={() => {
+                    navigation.navigate("Allmedicament");
                   }}
                 >
                   <View
@@ -329,13 +447,14 @@ export default function AllRendez_vous({ navigation }) {
                         color: "white",
                       }}
                     >
-                      Médicaments{" "}
+                      Médicament{" "}
                     </Text>
                   </View>
                 </TouchableOpacity>
+
                 <TouchableOpacity
                   onPress={() => {
-                    navigation.navigate("Medicament");
+                    navigation.navigate("enfant");
                   }}
                 >
                   <View
@@ -351,7 +470,7 @@ export default function AllRendez_vous({ navigation }) {
                     }}
                   >
                     <Image
-                      source={rendez}
+                      source={enfant1}
                       style={{
                         width: 25,
                         height: 25,
@@ -367,12 +486,11 @@ export default function AllRendez_vous({ navigation }) {
                         color: "white",
                       }}
                     >
-                      Médicaments{" "}
+                      Espace enfant{" "}
                     </Text>
                   </View>
                 </TouchableOpacity>
-
-                <TouchableOpacity
+                {/* <TouchableOpacity
                   onPress={() => {
                     navigation.navigate("DashHoraire");
                   }}
@@ -410,11 +528,48 @@ export default function AllRendez_vous({ navigation }) {
                     </Text>
                   </View>
                 </TouchableOpacity>
+*/}
+
                 <TouchableOpacity
                   onPress={() => {
-                    navigation.navigate("signin");
+                    navigation.navigate("AllVacination");
                   }}
                 >
+                  <View
+                    style={{
+                      flexDirection: "row",
+                      alignItems: "center",
+                      paddingVertical: 8,
+                      backgroundColor: "transparent",
+                      paddingLeft: 13,
+                      paddingRight: 35,
+                      borderRadius: 8,
+                      marginTop: 20,
+                    }}
+                  >
+                    <Image
+                      source={enfant1}
+                      style={{
+                        width: 25,
+                        height: 25,
+                        tintColor: "white",
+                      }}
+                    ></Image>
+
+                    <Text
+                      style={{
+                        fontSize: 15,
+                        fontWeight: "bold",
+                        paddingLeft: 15,
+                        color: "white",
+                      }}
+                    >
+                      Tous vacination{" "}
+                    </Text>
+                  </View>
+                </TouchableOpacity>
+
+                <TouchableOpacity onPress={logoutUser}>
                   <View
                     style={{
                       flexDirection: "row",
@@ -510,8 +665,8 @@ export default function AllRendez_vous({ navigation }) {
                 <Image
                   source={showMenu ? close : menu}
                   style={{
-                    width: 20,
-                    height: 20,
+                    width: 30,
+                    height: 30,
                     tintColor: "#rgb(97, 172, 243)",
                     marginTop: 40,
                   }}
@@ -557,7 +712,7 @@ export default function AllRendez_vous({ navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "blue",
+    backgroundColor: "white",
     alignItems: "flex-start",
     justifyContent: "flex-start",
 
@@ -572,7 +727,7 @@ const styles = StyleSheet.create({
   },
   s: {
     color: "#rgb(97, 172, 243)",
-    backgroundColor: "#rgb(97, 172, 243)",
+    backgroundColor: "#0147A6",
   },
   uploadBtnContainer: {
     height: 120,
@@ -585,10 +740,16 @@ const styles = StyleSheet.create({
     overflow: "hidden",
     marginTop: 60,
   },
+  whiteText: {
+    color: "white",
+  },
+  blackText: {
+    color: "#0147A6",
+  },
 
   s: {
     color: "#rgb(97, 172, 243)",
-    backgroundColor: "#rgb(97, 172, 243)",
+    backgroundColor: "#0147A6",
   },
   uploadBtnContainer: {
     height: 120,
@@ -604,7 +765,7 @@ const styles = StyleSheet.create({
   item: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#52D7FA",
+    backgroundColor: "#01BACF",
     padding: 20,
     marginVertical: 8,
     marginHorizontal: 16,
@@ -619,6 +780,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 18,
+    color: "white",
   },
   image: {
     width: 50,
