@@ -10,36 +10,104 @@ import {
   TextInput,
   TouchableOpacity,
   Dimensions,
+  Modal
 } from "react-native";
-import { DataTable } from "react-native-paper";
 import Ionicons from "react-native-vector-icons/Ionicons";
-import { MaterialIcons } from "@expo/vector-icons";
-import { AntDesign } from "@expo/vector-icons";
 const { width: WIDTH } = Dimensions.get("window");
 import conta from "../assets/yaya.png";
+import { LinearGradient } from "expo-linear-gradient";
 
+import { MaterialIcons } from "@expo/vector-icons";
 const { height: HEIGHT } = Dimensions.get("window");
+
 export default function OneMed({ route, navigation }) {
   const { med } = route.params;
   const [contact, setContact] = useState("");
-  useEffect(async () => {
-    console.log("bbb" + med);
-    if (med) {
-      setContact(med);
-    }
+  const [modalVisible, setModalVisible] = useState(false);
+  const [editedContact, setEditedContact] = useState({});
+  const [formData, setFormData] = useState({
+    nom_medicament: '',
+    Matin: { matin: false, DatePrise: '' },
+    nuit: { nuit: false, DatePrise: '' },
+    demi_journe: { demi_journe: false, DatePrise: '' },
+    duree: 0,
+  });
+  const [message, setMessage] = useState('');
+
+  useEffect(() => {
+    setContact(med);
+    setFormData(med);
   }, []);
 
+  const handleUpdateMedicament = async () => {
+    console.log('Attempting to update medicament:', formData);
+
+    try {
+      const response = await fetch(`http://192.168.43.105:5000/medicamentsUpdate/${contact._id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      console.log('Update response data:', data);
+      setMessage(data.message || 'Medication updated successfully');
+      setContact(data);
+      setModalVisible(false);
+    } catch (error) {
+      console.error('Error updating medication:', error);
+      setMessage('Error updating medication');
+    }
+  };
+
+  const handleUpdatePrendre = async () => {
+    console.log('Attempting to update prendre field');
+
+    try {
+      const response = await fetch(`http://192.168.43.105:5000/medicamentsPrendre/${contact._id}`, {
+        method: 'PUT',
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      console.log('Update prendre response data:', data);
+      setMessage(data.message || 'Prendre field updated successfully');
+      setContact(data);
+    } catch (error) {
+      console.error('Error updating prendre field:', error);
+      setMessage('Error updating prendre field');
+    }
+  };
+  const deleteContact = async (id) => {
+    try {
+      await fetch(`http://192.168.43.105:5000/deleteMed/${contact._id}`, {
+        method: "DELETE",
+      });
+
+      
+      navigation.navigate("Allmedicament")
+    } catch (error) {
+      console.error("Erreur lors de la suppression du contact :", error);
+    }
+  };
   return (
     <SafeAreaView style={{ height: HEIGHT, backgroundColor: "#fff" }}>
       <ScrollView>
         <View style={{ backgroundColor: "#fff" }}>
           <TouchableOpacity onPress={() => navigation.goBack()}>
-            <Ionicons
-              name="arrow-back"
-              size={40}
-              color="black"
-              style={{ marginLeft: 10 }}
-            />
+          <Image
+                  source={require('../assets/back.png')}
+                  style={{width:40 , height:40 , marginTop:20}}
+                />
           </TouchableOpacity>
         </View>
         <Image
@@ -149,7 +217,7 @@ export default function OneMed({ route, navigation }) {
 
               {contact.demi_journe?.DatePrise && (
                 <View style={{ flexDirection: "row" }}>
-                  <Text style={{ marginStart: 10, marginTop: 15 }}>
+                  <Text style={{ marginStart: 10, marginTop: 15 , color:"white" }}>
                     Démi journée:{" "}
                     <Text style={{ color: "#0147A6" }}>
                       {contact.demi_journe.DatePrise}
@@ -160,79 +228,110 @@ export default function OneMed({ route, navigation }) {
 
               {contact.nuit?.DatePrise && (
                 <View style={{ flexDirection: "row" }}>
-                  <Text style={{ marginStart: 10, marginTop: 15 }}>
+                  <Text style={{ marginStart: 10, marginTop: 15 , color:"white" }}>
                     Nuit:{" "}
-                    <Text style={{ color: "red" }}>
+                    <Text style={{ color: "#0147A6" }}>
                       {contact.nuit.DatePrise}
                     </Text>
                   </Text>
                 </View>
               )}
+             
+            </View>
+            <View style={{ flexDirection: "row", marginTop: 20 }}>
+              {contact.prendre && (
+                <TouchableOpacity onPress={handleUpdatePrendre}>
+                  <Image
+                    source={require('../assets/ollp.png')}
+                    style={{
+                      width: 45,
+                      height: 45,
+                      color: "white",
+                      marginLeft: 30,
+                      marginRight: 20,
+                      tintColor: "white"
+                    }}
+                  />
+                </TouchableOpacity>
+              )}
+              <TouchableOpacity onPress={() => setModalVisible(true)}>
+                <Image
+                  source={require('../assets/update.png')}
+                  style={{
+                    width: 45,
+                    height: 45,
+                    color: "white",
+                    tintColor: "white"
+                  }}
+                />
+              </TouchableOpacity>
+
+
+
+              <TouchableOpacity
+            style={{  marginLeft: 30 }}
+            onPress={() => deleteContact()}
+          >
+            <MaterialIcons name="delete" size={42} color="white" />
+          </TouchableOpacity>
             </View>
           </View>
-          <View></View>
         </View>
 
-        {/*<View style={styles.containr}>
-        <DataTable>
-        <DataTable.Header>
-        <DataTable.Cell style={{fontSize:20}}><AntDesign name="user" color="rgb(70, 143, 183)" size={20} style={styles.icon} />   Nom Docteur</DataTable.Cell>
-            <DataTable.Title style={{width:WIDTH/2 , marginLeft:40}}>{contact.nom_docteur}</DataTable.Title>
-      
-            
-             
-             </DataTable.Header>
-    
-             <DataTable.Header>
-                    <DataTable.Cell >
-                    <AntDesign name="user" color="rgb(70, 143, 183)" size={20} style={styles.icon} />    Prenom  docteur</DataTable.Cell>
-                    <DataTable.Title style={{width:WIDTH/2 , marginLeft:40}}>{contact.Prenom_docteur}</DataTable.Title>
-      
-            
-             
-             </DataTable.Header>
-    
-             <DataTable.Header>
-             <DataTable.Cell style={{fontSize:20}}> <AntDesign name="mail" color="rgb(70, 143, 183)" size={20} style={styles.icon} />   Email</DataTable.Cell>
-            <DataTable.Title style={{width:WIDTH/2 , marginLeft:40}}>{contact.email}</DataTable.Title>
-      
-             </DataTable.Header>
-            
-             <DataTable.Header>
-                    <DataTable.Cell >
-                    <AntDesign name="phone" color="rgb(70, 143, 183)" size={20} style={{marginRight:'10px'}} />   Numéro du télephone</DataTable.Cell>
-                    <DataTable.Title style={{width:WIDTH/2 , marginLeft:40}}>{contact.num_telephone}</DataTable.Title>
-      
-            
-             
-             </DataTable.Header>
-             <DataTable.Header>
-                    <DataTable.Cell  >
-                    <AntDesign name="home" color="rgb(70, 143, 183)" size={20} style={styles.icon} />   Adresse  docteur</DataTable.Cell>
-                    <DataTable.Title style={{width:WIDTH/2 , marginLeft:40}}>{contact.adresse_doc}</DataTable.Title>
-      
-            
-             
-             </DataTable.Header>
-              <DataTable.Header>
-                <DataTable.Cell>    Action</DataTable.Cell>
-                <DataTable.Title  style={{width:WIDTH/2 , marginLeft:80 }}>
-                  <TouchableOpacity  >
-                    <AntDesign name="checkcircle"  size={27} color="#22780F"  />     
-                    </TouchableOpacity>
-                    </DataTable.Title>
-                    <DataTable.Title>         
-                    <TouchableOpacity >  
-                                      
-                                      <MaterialIcons name='delete'size= {30} color='#D90115'   />  
-                    </TouchableOpacity>
-                              
-                  </DataTable.Title>
-              
-              </DataTable.Header>
-        
-        </DataTable>
-</View>*/}
+        <Modal
+          animationType="slide"
+          transparent={true}
+          visible={modalVisible}
+          onRequestClose={() => {
+            setModalVisible(!modalVisible);
+          }}
+        >
+          <View style={styles.modalView}>
+            <Text style={styles.modalText}>Modifier Médicament</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Nom du Médicament"
+              value={formData.nom_medicament}
+              onChangeText={(text) => setFormData({ ...formData, nom_medicament: text })}
+            />
+            {formData.Matin.DatePrise && (
+              <TextInput
+                style={styles.input}
+                placeholder="Matin Date Prise"
+                value={formData.Matin.DatePrise}
+                onChangeText={(text) => setFormData({ ...formData, Matin: { ...formData.Matin, DatePrise: text } })}
+              />
+            )}
+            {formData.demi_journe.DatePrise && (
+              <TextInput
+                style={styles.input}
+                placeholder="Demi-journée Date Prise"
+                value={formData.demi_journe.DatePrise}
+                onChangeText={(text) => setFormData({ ...formData, demi_journe: { ...formData.demi_journe, DatePrise: text } })}
+              />
+            )}
+            {formData.nuit.DatePrise && (
+              <TextInput
+                style={styles.input}
+                placeholder="Nuit Date Prise"
+                value={formData.nuit.DatePrise}
+                onChangeText={(text) => setFormData({ ...formData, nuit: { ...formData.nuit, DatePrise: text } })}
+              />
+            )}
+            <View style={styles.modalButtonsContainer}>
+              <TouchableOpacity style={styles.modalButton} onPress={handleUpdateMedicament}>
+                <LinearGradient colors={['#01BACF', '#01BACF']} style={styles.signIn}>
+                  <Text style={[styles.textSign, { color: '#fff' }]}>Modifier</Text>
+                </LinearGradient>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.modalButton} onPress={() => setModalVisible(false)}>
+                <LinearGradient colors={['#8EACCD', '#8EACCD']} style={styles.signIn}>
+                  <Text style={[styles.textSign, { color: '#fff' }]}>Annuler</Text>
+                </LinearGradient>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </Modal>
       </ScrollView>
     </SafeAreaView>
   );
@@ -243,9 +342,122 @@ const styles = StyleSheet.create({
     paddingTop: 20,
     backgroundColor: "#fff",
   },
-
   f: {
     fontStyle: "italic",
     color: "red",
+  },
+  image: {
+    width: '80%',
+    height: 241,
+    alignSelf: 'center',
+    marginTop: 46,
+  },
+  button: {
+    alignItems: "center",
+    marginTop: 20,
+    borderRadius: 10,
+    marginLeft: 10
+  },
+  iconContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    marginTop: 20,
+    marginBottom: 30
+  },
+  signIn: {
+    width: 100,
+    height: 50,
+    justifyContent: "center",
+    alignItems: "center",
+    borderRadius: 8,
+    marginBottom: 30,
+  },
+  signInn: {
+    width: 200,
+    height: 50,
+    justifyContent: "center",
+    alignItems: "center",
+    borderRadius: 8,
+    marginBottom: 30,
+    marginLeft: 20
+  },
+  textSign: {
+    fontSize: 18,
+    fontWeight: "bold",
+  },
+  header: {
+    marginTop: 11,
+  },
+  medicamentInfo: {
+    flex: 1,
+    flexDirection: "row",
+    backgroundColor: "#fff",
+    borderRadius: 11,
+    shadowColor: "#000",
+    height: 300,
+    shadowOffset: {
+      width: 0,
+      height: 11,
+    },
+    shadowOpacity: 0.3,
+    shadowRadius: 20,
+    padding: 10,
+    marginStart: 7,
+    marginEnd: 8,
+  },
+  medicamentTitle: {
+    fontSize: 19,
+    fontWeight: 'bold',
+    marginBottom: 20,
+    textDecorationLine: 'underline',
+    color: 'rgb(97, 172, 243)',
+  },
+  medicamentDetail: {
+    fontSize: 16,
+    marginStart: 10,
+    marginTop: 15,
+  },
+  medicamentValue: {
+    color: 'red',
+  },
+  modalView: {
+    margin: 20,
+    backgroundColor: "white",
+    borderRadius: 20,
+    padding: 35,
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  modalText: {
+    marginBottom: 15,
+    textAlign: "center",
+    fontSize: 20,
+    fontWeight: "bold",
+    color:"#8EACCD"
+  },
+  input: {
+    width: WIDTH - 70,
+    height: 40,
+    borderColor: 'gray',
+    borderWidth: 1,
+    borderRadius: 10,
+    marginBottom: 15,
+    padding: 10,
+  },
+  modalButtonsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: WIDTH - 70,
+  },
+  modalButton: {
+    flex: 1,
+    margin: 5,
   },
 });

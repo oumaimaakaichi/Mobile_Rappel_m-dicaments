@@ -38,25 +38,39 @@ import ListDoc from "./ListDoc";
 export default function Document({ navigation }) {
   const [currentTab, setCurrentTab] = useState("Home");
 
-  const [showPopup, setShowPopup] = useState(false); // Déplacer showPopup à l'intérieur de la fonction composant
-  const [isButtonVisible, setIsButtonVisible] = useState(true); // État pour gérer la visibilité du bouton
+  const [showPopup, setShowPopup] = useState(false); // Déplacer shà l'intérieur de la fonction composant
+  const [isButtonVisible, setIsButtonVisible] = useState(true); // État pour gérer visibilité du bouton
 
   const [showMenu, setShowMenu] = useState(false);
 
   const [user, setUser] = useState("");
   const offsetValue = useRef(new Animated.Value(0)).current;
-  // Scale Intially must be One...
+  // Scale Intial must be One...
   const scaleValue = useRef(new Animated.Value(1)).current;
   const closeButtonOffset = useRef(new Animated.Value(0)).current;
   const isFocused = useIsFocused();
   let data = "";
-  useEffect(async () => {
-    data = await getClientData();
-    setUser(data);
-    console.log("ddddddd" + data?.avatar);
-    console.log("dddddd" + user);
-  }, []);
+  useEffect(() => {
+    let isMounted = true;
 
+    const fetchData = async () => {
+      const data = await getClientData();
+      if (isMounted) {
+        setUser(data);
+      }
+    };
+
+    fetchData();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+  const logoutUser = async () => {
+         
+    navigation.navigate("LoginC");
+ 
+};
   return (
     <>
       <SafeAreaView style={styles.container}>
@@ -175,7 +189,7 @@ export default function Document({ navigation }) {
 
                 <TouchableOpacity
                   onPress={() => {
-                    navigation.navigate("doc");
+                    navigation.navigate("docc");
                   }}
                 >
                   <View
@@ -331,7 +345,7 @@ export default function Document({ navigation }) {
                 </TouchableOpacity>
                 <TouchableOpacity
                   onPress={() => {
-                    navigation.navigate("AllMed");
+                    navigation.navigate("AllRendez_vous");
                   }}
                 >
                   <View
@@ -446,7 +460,7 @@ export default function Document({ navigation }) {
                 </TouchableOpacity>
                 <TouchableOpacity
                   onPress={() => {
-                    navigation.navigate("signin");
+                    navigation.navigate("LoginC");
                   }}
                 >
                   <View
@@ -606,16 +620,16 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     backgroundColor: "transparent",
     borderRadius: 10,
-    marginHorizontal: 30,
+  
   },
   contactButton: {
     flexDirection: "row",
     alignItems: "center",
-    paddingHorizontal: 21,
+    paddingHorizontal: 1,
     paddingVertical: 10,
     backgroundColor: "transparent",
     borderRadius: 10,
-    marginHorizontal: 45,
+   
   },
   contactButtonText: {
     color: "black",
@@ -627,7 +641,7 @@ const styles = StyleSheet.create({
     width: 30,
     height: 30,
 
-    marginLeft: 150,
+    marginLeft: 250,
   },
   contactButtonImage1: {
     width: 40,
@@ -638,15 +652,14 @@ const styles = StyleSheet.create({
     backgroundColor: "#0147A6",
   },
   uploadBtnContainer: {
-    height: 121,
+    height: 120,
     width: 120,
     borderRadius: 125 / 5,
-    justifyContent: "center",
-    alignItems: "center",
+ marginRight:40,
 
     borderWidth: 0,
     overflow: "hidden",
-    marginTop: 60,
+    marginTop: 50,
   },
   button: {
     alignItems: "center",

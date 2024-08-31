@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect } from "react";
+import React, { useRef, useState, useEffect , useCallback } from "react";
 import axios from "axios";
 import {
   Animated,
@@ -27,7 +27,7 @@ import medicament from "../assets/med.png";
 import p from "../assets/cjt.png";
 import rendez from "../assets/rendez.avif";
 import document from "../assets/doc.png";
-import { useIsFocused } from "@react-navigation/native";
+import { useIsFocused , useFocusEffect} from "@react-navigation/native";
 import historique from "../assets/histo.png";
 import { useRoute } from "@react-navigation/native";
 import cland from "../assets/clandr.png";
@@ -35,8 +35,15 @@ import list from "../assets/hihi.png";
 import enfant1 from "../assets/enfant.png";
 import logout from "../assets/logout.png";
 import DetailleRendezvous from "./detailleRendez-vous";
+import * as Notifications from "expo-notifications";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldShowAlert: true,
+    shouldPlaySound: true,
+    shouldSetBadge: false,
+  }),
+});
 export default function AllVacination({ navigation }) {
   const [currentTab, setCurrentTab] = useState("Home");
 
@@ -65,24 +72,167 @@ export default function AllVacination({ navigation }) {
     const fetchData = async () => {
       const data = await getClientData();
       setUser(data);
-      console.log("dddfd" + data.email);
+      console.log("ddfd" + data.email);
     };
 
     fetchData();
   }, []);
 
-  // Définir les données de la liste
 
-  // Fonction de rendu des éléments de la liste
+
+
+  const getNotificationPermission = async () => {
+    const { status: existingStatus } = await Permissions.getAsync(
+      Permissions.NOTIFICATIONS
+    );
+    let finalStatus = existingStatus;
+    if (existingStatus !== "granted") {
+      const { status } = await Permissions.askAsync(Permissions.NOTIFICATIONS);
+      finalStatus = status;
+    }
+    return finalStatus === "granted";
+  };
+
+  useEffect(() => {
+    console.log("Registering for push notifications...");
+    registerForPushNotificationsAsync()
+      .then((token) => {
+        console.log("token: ", token);
+        setExpoPushToken(token);
+      })
+      .catch((err) => console.log(err));
+  }, []);
+
+  async function registerForPushNotificationsAsync() {
+    let token;
+
+    if (Platform.OS === "android") {
+      await Notifications.setNotificationChannelAsync("default", {
+        name: "default",
+        importance: Notifications.AndroidImportance.MAX,
+        vibrationPattern: [0, 250, 250, 250],
+        lightColor: "#FF231F7C",
+      });
+    }
+
+    if (Device.isDevice) {
+      const { status: existingStatus } =
+        await Notifications.getPermissionsAsync();
+      let finalStatus = existingStatus;
+      if (existingStatus !== "granted") {
+        const { status } = await Notifications.requestPermissionsAsync();
+        finalStatus = status;
+      }
+      if (finalStatus !== "granted") {
+        alert("Failed to get push token for push notification!");
+        return;
+      }
+      // Learn more about projectId:
+      // https://docs.expo.dev/push-notifications/push-notifications-setup/#configure-projectid
+      token = (
+        await Notifications.getExpoPushTokenAsync({
+          projectId: "2cabd58e-13b7-4adc-bcd2-ea8675f091ce",
+        })
+      ).data;
+      console.log(token);
+    } else {
+      alert("Must use physical device for Push Notifications");
+    }
+
+    return token;
+  }
+  useEffect(() => {
+    console.log(data);
+    getNotificationPermission();
+  }, []);
+  const scheduleNotifications = async (vaccinations) => {
+    vaccinations.forEach(async (item) => {
+      // Heure et date de vaccination
+      const vaccinationTimeParts = item.heure.split(":");
+      console.log("bbbb"+vaccinationTimeParts)
+      const vaccinationDate = new Date(item.date);
+      vaccinationDate.setHours(parseInt(vaccinationTimeParts[0], 10));
+      vaccinationDate.setMinutes(parseInt(vaccinationTimeParts[1], 10));
+      console.log("bbbb"+vaccinationDate)
+      // Date de notheuren avant l'heure de vaccination
+      const notificationDate = new Date(vaccinationDate.getTime() - 2 * 60 * 60 * 1000);
+  
+      // Vérifier si la notification doit être planifue
+      if (notificationDate > new Date()) {
+        await Notifications.scheduleNotificationAsync({
+          content: {
+            title: "Rappel de vaccination",
+             body: `Vous avez un rendez-vous de vaccination à ${item.heure} dans ${item.lieu}`,
+    
+            data: { item },
+          },
+          trigger: { date: notificationDate },
+        });
+      }
+    });
+  };
+  
   useEffect(() => {
     const fetchData = async () => {
       try {
+        const data = await getClientData();
         setIsLoading(true);
         const response = await axios.get(
-          "http://192.168.43.116:5000/api/vacination/getVacination"
+          `http://192.168.43.105:5000/api/vacination/vaccinationGet/${data?.Data?._id}`
         );
         setData(response.data);
         setIsLoading(false);
+        scheduleNotifications(response.data);
+      } catch (error) {
+        console.error("Error fetching rendez-vous data: ", error);
+        setIsLoading(false);
+      }
+    };
+  
+    fetchData();
+  }, []);
+  const fetchData = async () => {
+    try {
+      const data = await getClientData();
+      setIsLoading(true);
+      const response = await axios.get(
+        `http://192.168.43.105:5000/api/vacination/vaccinationGet/${data?.Data?._id}`
+      );
+      setData(response.data);
+      setIsLoading(false);
+      scheduleNotifications(response.data);
+    } catch (error) {
+      console.error("Error fetching rendez-vous data: ", error);
+      setIsLoading(false);
+    }
+  };
+  useFocusEffect(
+    useCallback(() => {
+      fetchData();
+    }, [])
+  );
+  
+  useEffect(() => {
+    fetchData();
+    scheduleNotifications
+  }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      fetchData();
+    }, [])
+  );
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const data = await getClientData();
+        setIsLoading(true);
+        const response = await axios.get(
+          `http://192.168.43.105:5000/api/vacination/vaccinationGet/${data?.Data?._id}`
+        );
+        setData(response.data);
+        setIsLoading(false);
+        scheduleNotifications(response.data);
       } catch (error) {
         console.error("Error fetching rendez-vous data: ", error);
         setIsLoading(false);
@@ -129,34 +279,19 @@ export default function AllVacination({ navigation }) {
   };
 
   const logoutUser = async () => {
-    try {
-      // Nettoyer les données d'authentification dans AsyncStorage
-      await AsyncStorage.removeItem("userData");
-
-      // Effacer les données saisies précédemment dans le stockage local
-      await AsyncStorage.removeItem("email");
-      await AsyncStorage.removeItem("password");
-
-      // Réinitialiser les valeurs des champs de formulaire
-      setEmail("");
-      setPassword("");
-
-      // Rediriger l'utilisateur vers la page de connexion
-      navigation.navigate("LoginC");
-    } catch (error) {
-      console.error("Erreur lors de la déconnexion :", error);
-    }
-  };
+         
+    navigation.navigate("LoginC");
+ 
+};
   return (
     <>
       <SafeAreaView style={styles.container}>
         <ScrollView style={styles.s}>
-          <View
+        <View
             style={{
               justifyContent: "flex-start",
               padding: 15,
               alignItems: "center",
-              marginBottom: 20,
             }}
           >
             <TouchableOpacity style={styles.uploadBtnContainer}>
@@ -172,6 +307,7 @@ export default function AllVacination({ navigation }) {
                 fontWeight: "bold",
                 color: "whitesmoke",
                 marginTop: 20,
+                marginRight: 70,
               }}
             >
               {user?.Data?.nom} {user?.Data?.prenom}
@@ -186,7 +322,9 @@ export default function AllVacination({ navigation }) {
                   }
                 }}
               >
-                <TouchableOpacity>
+                <TouchableOpacity onPress={() => {
+                    navigation.navigate("dash");
+                  }}>
                   <View
                     style={{
                       flexDirection: "row",
@@ -701,6 +839,7 @@ export default function AllVacination({ navigation }) {
                       renderItem={renderItem}
                       keyExtractor={(item) => item._id}
                       style={styles.flatList}
+                    
                     />
                   </ScrollView>
                 </ScrollView>
@@ -736,13 +875,13 @@ const styles = StyleSheet.create({
   uploadBtnContainer: {
     height: 120,
     width: 120,
-    borderRadius: 125 / 2,
-    justifyContent: "center",
-    alignItems: "center",
+    borderRadius: 125 / 5,
+ marginRight:50,
 
     borderWidth: 0,
     overflow: "hidden",
-    marginTop: 60,
+    marginTop: 50,
+    marginBottom:20
   },
   whiteText: {
     color: "white",
@@ -751,30 +890,17 @@ const styles = StyleSheet.create({
     color: "#0147A6",
   },
 
-  s: {
-    color: "#rgb(97, 172, 243)",
-    backgroundColor: "#0147A6",
-  },
-  uploadBtnContainer: {
-    height: 120,
-    width: 120,
-    borderRadius: 125 / 2,
-    justifyContent: "center",
-    alignItems: "center",
-
-    borderWidth: 0,
-    overflow: "hidden",
-    marginTop: 60,
-  },
+  
+  
   item: {
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: "#01BACF",
     padding: 20,
     marginVertical: 8,
-    marginHorizontal: 16,
+ 
     borderRadius: 10,
-    width: 450,
+    width: 380,
     shadowOffset: {
       width: 0,
       height: 10,
@@ -800,5 +926,6 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
     elevation: 5,
+    width:400
   },
 });

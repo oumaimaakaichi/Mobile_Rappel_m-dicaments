@@ -12,7 +12,8 @@ import {
 import * as DocumentPicker from "expo-document-picker";
 import { getClientData } from "../utils/AsyncStorageClient";
 import { AntDesign } from "@expo/vector-icons";
-import conta from "../assets/docIm-removebg-preview.jpg";
+import conta from "../assets/joo.png";
+import Toast from "react-native-toast-message";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { Button } from "react-native-paper";
@@ -59,7 +60,7 @@ const AddDocPDF = ({ navigation }) => {
       formData.append("nom_document", nomDocument);
       formData.append("utilisateur", user);
 
-      const response = await fetch("http://192.168.43.116:5000/add-document", {
+      const response = await fetch("http://192.168.43.105:5000/add-document", {
         method: "POST",
         body: formData,
         headers: {
@@ -68,6 +69,25 @@ const AddDocPDF = ({ navigation }) => {
       });
 
       const responseData = await response.json();
+      if(response.ok){
+       navigation.navigate('docc')
+          Toast.show({
+           position: "top",
+           type: "success",
+ 
+           text1: "Ajout d'un document",
+           text2: "Document ajouté avec succès",
+           
+ 
+           autoHide: true,
+           visibilityTime: 8000,
+           autoHide: true,
+           onHide: () => {
+             navigation.navigate("docc");
+           },
+           onShow: () => {},
+         });
+        }
       console.log("Réponse de l'API :", responseData);
     } catch (error) {
       console.log("Erreur lors de l'envoi des fichiers à l'API :", error);
@@ -75,43 +95,26 @@ const AddDocPDF = ({ navigation }) => {
   };
 
   return (
-    <ScrollView>
+    <ScrollView style={{backgroundColor:"white"}}>
       <View style={styles.container}>
-        <View style={styles.backIconContainer}>
-          <AntDesign
-            name="arrowleft"
-            size={24}
-            color="black"
-            onPress={() => navigation.navigate("doc")}
-          />
-        </View>
-        <Image
-          source={conta}
-          style={{
-            width: 220,
-            height: 200,
-            alignSelf: "center",
-            marginTop: 20,
-            marginBottom: 30,
-          }}
-        />
-        <Button
-          style={{ backgroundColor: "transparent", borderColor: "transparent" }}
-        >
-          <TouchableOpacity
-            onPress={handleDocumentPick}
-            style={styles.uploadButton}
-          >
-            <AntDesign
-              name="upload"
-              color="rgb(70, 143, 183)"
-              size={25}
-              style={styles.icon}
-            />
-            <Text style={styles.tx}>Sélectionner un PDF</Text>
-          </TouchableOpacity>
-        </Button>
+      <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backIconContainer}>
+        <Image source={require('../assets/back.png')} style={{ width: 40, height: 40 }} />
+      </TouchableOpacity>
+        
+     <Toast/>
+      <Image source={conta} style={styles.headerImage} />
+       
+
+
+
+<TouchableOpacity onPress={handleDocumentPick} style={styles.uploadButton}>
+          <Image source={require('../assets/pload.png')} style={styles.uploadIcon} />
+          <Text style={styles.uploadText}>Télécharger un pdf</Text>
+        </TouchableOpacity>
+        
+     
         <View style={styles.inputContainer}>
+     
           <AntDesign
             name="mail"
             color="rgb(70, 143, 183)"
@@ -127,21 +130,18 @@ const AddDocPDF = ({ navigation }) => {
         {selectedDocument && (
           <View style={styles.imageContainer}>
             <Text style={{ fontSize: 16, fontWeight: "bold" }}>
-              Fichier sélectionné :
+              Fichier sélectionné : 
             </Text>
             <Text>{selectedDocument}</Text>
           </View>
         )}
-        <View style={styles.button}>
-          <TouchableOpacity style={styles.signIn} onPress={handleUpload}>
-            <LinearGradient
-              colors={["rgb(97, 172, 243)", "rgb(97, 172, 243)"]}
-              style={styles.signIn}
-            >
-              <Text style={[styles.textSign, { color: "#fff" }]}>Ajouter</Text>
-            </LinearGradient>
-          </TouchableOpacity>
-        </View>
+      <View style={styles.buttonContainer}>
+        <TouchableOpacity style={styles.signInButton} onPress={handleUpload}>
+          <LinearGradient colors={["#61acf3", "#61acf3"]} style={styles.signInButton}>
+            <Text style={styles.signInText}>Ajouter</Text>
+          </LinearGradient>
+        </TouchableOpacity>
+      </View>
       </View>
     </ScrollView>
   );
@@ -154,60 +154,83 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     padding: 20,
   },
-  imageContainer: {
-    marginTop: 21,
-    alignItems: "center",
+  headerImage: {
+    width: 300,
+    height: 230,
+    alignSelf: "center",
+    marginTop: 170,
+    marginBottom: 10,
   },
   uploadButton: {
     flexDirection: "row",
-
-    marginTop: 60,
+    alignItems: "center",
+    marginTop: 20,
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 10,
+    backgroundColor: "#e0f0ff",
+  },
+  uploadIcon: {
+    width: 40,
+    height: 40,
+  },
+  cameraIcon: {
+    width: 37,
+    height: 37,
+    tintColor: "blue",
+  },
+  uploadText: {
+    fontSize: 16,
+    fontWeight: "500",
+    marginLeft: 10,
   },
   inputContainer: {
     flexDirection: "row",
     alignItems: "center",
-    borderWidth: 0.6,
+    borderWidth: 1,
     borderColor: "rgb(70, 143, 183)",
     borderRadius: 5,
     paddingHorizontal: 10,
     marginTop: 20,
     height: 50,
-    width: WIDTH - 30,
-  },
-  tx: {
-    fontSize: 20, // Taille de la police en nombre, pas en chaîne de caractères
-    fontWeight: "500",
+    width: WIDTH - 40,
   },
   icon: {
-    marginRight: 11,
+    marginRight: 10,
   },
   input: {
     flex: 1,
-    height: 70,
-    marginLeft: 10,
+    height: 50,
     borderWidth: 0,
-    borderColor: "rgb(70, 143, 183)",
-    borderRadius: 8,
-    paddingHorizontal: 0,
+    marginLeft: 10,
   },
-  button: {
+  imageContainer: {
+    marginTop: 20,
+    alignItems: "center",
+  },
+  image: {
+    width: WIDTH - 40,
+    height: 200,
+    borderRadius: 10,
+    resizeMode: "cover",
+  },
+  buttonContainer: {
     alignItems: "center",
     marginTop: 40,
+    marginBottom: 200,
     borderRadius: 8,
   },
-
-  signIn: {
-    width: WIDTH - 30,
+  signInButton: {
+    width: WIDTH - 40,
     height: 50,
     justifyContent: "center",
     alignItems: "center",
     borderRadius: 8,
-    marginBottom: 30,
-    marginTop: 15,
   },
-  textSign: {
+  signInText: {
     fontSize: 18,
     fontWeight: "bold",
+    color: "#fff",
   },
   backIconContainer: {
     position: "absolute",

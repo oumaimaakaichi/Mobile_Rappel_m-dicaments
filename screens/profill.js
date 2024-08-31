@@ -51,7 +51,7 @@ export default function Profiil({ navigation }) {
 
     try {
       const res = await fetch(
-        `http://192.168.43.116:5000/api/utlisateur/modifier/${user?._id}`,
+        `http://192.168.1.17:5000/api/utlisateur/modifier/${user?._id}`,
         {
           method: "PUT",
           headers: {
@@ -75,7 +75,21 @@ export default function Profiil({ navigation }) {
       console.log("erreur", error);
     }
   };
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const userData = await getClientData();
+        setUser(userData);
+        setUserId(userData.Data._id);
+        console.log("UserData:", userData);
+        console.log("User ID:", userData.Data._id);
+      } catch (error) {
+        console.error("Error fetching user dbata:", error);
+      }
+    };
 
+    
+  }, []);
   return (
     <SafeAreaView style={{ height: HEIGHT }}>
       <ScrollView>
@@ -84,7 +98,7 @@ export default function Profiil({ navigation }) {
             source={conta}
             style={{
               width: 190,
-              height: 140,
+              height: 190,
               alignSelf: "center",
               marginTop: 5,
             }}
@@ -99,7 +113,7 @@ export default function Profiil({ navigation }) {
             <TextInput
               placeholder="Numéro de téléphone"
               style={styles.input}
-              defaultValue={user?.Num_tel}
+              defaultValue={user?.Data?.Num_tel}
               onChangeText={(val) => setNumTel(val)}
             />
           </View>
@@ -113,7 +127,7 @@ export default function Profiil({ navigation }) {
             <TextInput
               placeholder="Email Docteur"
               style={styles.input}
-              defaultValue={user?.email}
+              defaultValue={user?.Data?.email}
               onChangeText={(val) => setEmail(val)}
             />
           </View>
@@ -128,7 +142,7 @@ export default function Profiil({ navigation }) {
             <TextInput
               placeholder="Age"
               style={styles.input}
-              defaultValue={user?.age}
+              defaultValue={user?.Data?.age}
               onChangeText={(val) => setAge(val)}
             />
           </View>

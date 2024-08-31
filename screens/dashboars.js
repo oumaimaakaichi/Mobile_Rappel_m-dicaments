@@ -14,7 +14,7 @@ import profile from "../assets/prof.png";
 import { getClientData } from "../utils/AsyncStorageClient";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-import vertImage from "../assets/vert.png"; // Assurez-vous que le chemin d'accès à votre image est correct
+import vertImage from "../assets/vert.png"; // Assurezus qemin d'accès à votre image est correct
 
 // Tab ICons...
 import home from "../assets/home.png";
@@ -23,7 +23,6 @@ import logout from "../assets/logout.png";
 import cland from "../assets/clandr.png";
 import list from "../assets/hihi.png";
 // Menu
-
 import Contact from "../assets/b.png";
 import menu from "../assets/menu.png";
 import enfant1 from "../assets/enfant.png";
@@ -53,47 +52,31 @@ Notifications.setNotificationHandler({
 });
 export default function Dashboard({ navigation }) {
   const [notificationColor, setNotificationColor] = useState("green");
-  const [currentTab, setCurrentTab] = useState("Home");
+  const [currentTab, setCurrentTab] = useState("dash");
   const [expoPushToken, setExpoPushToken] = useState("");
-
   const [showMenu, setShowMenu] = useState(false);
-
   const [user, setUser] = useState("");
-  const offsetValue = useRef(new Animated.Value(0)).current;
-  // Scale Intially must be One...
-  const scaleValue = useRef(new Animated.Value(1)).current;
-  const closeButtonOffset = useRef(new Animated.Value(0)).current;
-  const isFocused = useIsFocused();
   const [userId, setUserId] = useState("");
   const [rendezVous, setRendezVous] = useState([]);
   const [selectedRendezVous, setSelectedRendezVous] = useState(null);
-  // Assurez-vous que les valeurs des champs de formulaire sont correctement initialisées
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const offsetValue = useRef(new Animated.Value(0)).current;
+  const scaleValue = useRef(new Animated.Value(1)).current;
+  const closeButtonOffset = useRef(new Animated.Value(0)).current;
+
   useEffect(() => {
     const fetchData = async () => {
       try {
         const userData = await getClientData();
         setUser(userData);
-        setUserId(userData.Data._id); // Mettre à jour la variable d'état avec l'ID de l'utilisateur
+        setUserId(userData.Data._id);
         console.log("UserData:", userData);
         console.log("User ID:", userData.Data._id);
       } catch (error) {
-        console.error("Error fetching user data:", error);
+        console.error("Error fetching user dbata:", error);
       }
     };
 
     fetchData();
-  }, []);
-  console.log("voila le user id : " + userId);
-  useEffect(() => {
-    const intervalId = setInterval(() => {
-      // Appeler checkAndSendNotifications à intervalles réguliers (par exemple, toutes les heures)
-      checkAndSendNotifications();
-    }, 60000); // Exécuter toutes les heures (3600000 millisecondes)
-
-    // Nettoyer la minuterie lorsque le composant est démonté
-    return () => clearInterval(intervalId);
   }, []);
 
   useEffect(() => {
@@ -130,8 +113,6 @@ export default function Dashboard({ navigation }) {
         alert("Failed to get push token for push notification!");
         return;
       }
-      // Learn more about projectId:
-      // https://docs.expo.dev/push-notifications/push-notifications-setup/#configure-projectid
       token = (
         await Notifications.getExpoPushTokenAsync({
           projectId: "2cabd58e-13b7-4adc-bcd2-ea8675f091ce",
@@ -144,15 +125,73 @@ export default function Dashboard({ navigation }) {
 
     return token;
   }
-  const sendNotification1 = async () => {
-    console.log("Sending push notification 2...");
 
-    // notification message
+  useEffect(() => {
+    const intervalId = setInterval(() => {
+      checkAndSendNotifications();
+    }, 3600000); // Exécuter toutes les heures (3600000 millisecondes)
+
+    return () => clearInterval(intervalId);
+  }, [userId]);
+
+  /*const checkAndSendNotifications = async () => {
+    try {
+      console.log("Avant la récupération des rendez-vous");
+      const response = await fetch(
+        `http://192.168.43.105:5000/api/rendezVous/getbyutlisateur/ut/${userId}`
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch user's appointments");
+      }
+
+      const rendezVous = await response.json();
+      console.log(rendezVous);
+      const now = new Date();
+
+      rendezVous.forEach(async (rdv) => {
+        const appointmentTime = new Date(rdv.date);
+
+        appointmentTime.setHours(parseInt(rdv.heure.split(":")[0]));
+        appointmentTime.setMinutes(parseInt(rdv.heure.split(":")[1]));
+
+        const twoHoursBefore = new Date(
+          appointmentTime.getTime() - 2 * 60 * 60 * 1000
+        );
+
+        if (
+          now.getFullYear() === appointmentTime.getFullYear() &&
+          now.getMonth() === appointmentTime.getMonth() &&
+          now.getDate() === appointmentTime.getDate() &&
+          now.getHours() === twoHoursBefore.getHours() &&
+          now.getMinutes() === twoHoursBefore.getMinutes()
+        ) {
+          await sendNotification1();
+        }
+
+        if (
+          now.getFullYear() === appointmentTime.getFullYear() &&
+          now.getMonth() === appointmentTime.getMonth() &&
+          now.getDate() === appointmentTime.getDate() - 1 &&
+          now.getHours() === 0 &&
+          now.getMinutes() === 59
+        ) {
+          await sendNotification2();
+        }
+      });
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const sendNotification1 = async () => {
+    console.log("Sending push notification...");
+
     const message = {
       to: expoPushToken,
       sound: "default",
       title: "Notification de Rendez-vous!",
-      body: "Vous avez un rendez-vous apres deux heure, n'oubliez pas!",
+      body: "Vous avez un rendez-vous après deux heures, n'oubliez pas!",
     };
 
     console.log("Notification message:", message);
@@ -183,10 +222,10 @@ export default function Dashboard({ navigation }) {
       console.error("Error while sending notification:", error);
     }
   };
-  const sendNotification2 = async () => {
-    console.log("Sending push notification 2...");
 
-    // notification message
+  const sendNotification2 = async () => {
+    console.log("Sending push notification...");
+
     const message = {
       to: expoPushToken,
       sound: "default",
@@ -221,341 +260,12 @@ export default function Dashboard({ navigation }) {
     } catch (error) {
       console.error("Error while sending notification:", error);
     }
-  };
-  /*
-  const checkAndSendNotifications = async () => {
-    try {
-      console.log("Avant la récupération des rendez-vous");
-      const response = await fetch(
-        `http://192.168.1.14:5000/api/rendezVous/getbyutlisateur/ut/${userId}`
-      );
-
-      if (!response.ok) {
-        throw new Error("Failed to fetch user's appointments");
-      }
-
-      const rendezVous = await response.json();
-      console.log(rendezVous);
-      const now = new Date();
-
-      // Parcours des rendez-vous
-      rendezVous.forEach(async (rdv) => {
-        const appointmentTime = new Date(rdv.date);
-
-        appointmentTime.setHours(parseInt(rdv.heure.split(":")[0]));
-        appointmentTime.setMinutes(parseInt(rdv.heure.split(":")[1]));
-
-        const oneDayBefore = new Date(
-          appointmentTime.getTime() - 1 * 24 * 60 * 60 * 1000
-        );
-
-        // Vérification de la condition spécifiée
-        if (
-          now.getFullYear() === appointmentTime.getFullYear() &&
-          now.getMonth() === appointmentTime.getMonth() &&
-          now.getDate() === appointmentTime.getDate() - 1 && // Vérifier si c'est la veille
-          now.getHours() === 0 &&
-          now.getMinutes() === 39
-        ) {
-          // Si la condition est vérifiée, envoyer la notification
-          await sendNotification2();
-        }
-      });
-    } catch (error) {
-      console.error(error);
-      setError(
-        "Une erreur s'est produite lors de la récupération des rendez-vous."
-      );
-    }
-  };
-*/
-
-  const checkAndSendNotifications = async () => {
-    try {
-      console.log("Avant la récupération des rendez-vous");
-      const response = await fetch(
-        `http://192.168.43.116:5000/api/rendezVous/getbyutlisateur/ut/${userId}`
-      );
-
-      if (!response.ok) {
-        throw new Error("Failed to fetch user's appointments");
-      }
-
-      const rendezVous = await response.json();
-      console.log(rendezVous);
-      const now = new Date();
-
-      // Parcours des rendez-vous
-      rendezVous.forEach(async (rdv) => {
-        const appointmentTime = new Date(rdv.date);
-
-        appointmentTime.setHours(parseInt(rdv.heure.split(":")[0]));
-        appointmentTime.setMinutes(parseInt(rdv.heure.split(":")[1]));
-
-        // Calculer deux heures avant le rendez-vous
-        const twoHoursBefore = new Date(
-          appointmentTime.getTime() - 2 * 60 * 60 * 1000
-        );
-
-        // Vérifier si c'est le même jour que le rendez-vous et si c'est deux heures avant
-        if (
-          now.getFullYear() === appointmentTime.getFullYear() &&
-          now.getMonth() === appointmentTime.getMonth() &&
-          now.getDate() === appointmentTime.getDate() &&
-          now.getHours() === twoHoursBefore.getHours() &&
-          now.getMinutes() === twoHoursBefore.getMinutes()
-        ) {
-          // Si la condition est vérifiée, envoyer la notification 1
-          await sendNotification1();
-        }
-
-        // Vérifier si c'est la veille du rendez-vous à minuit et 39 minutes
-        if (
-          now.getFullYear() === appointmentTime.getFullYear() &&
-          now.getMonth() === appointmentTime.getMonth() &&
-          now.getDate() === appointmentTime.getDate() - 1 && // Vérifier si c'est la veille
-          now.getHours() === 0 &&
-          now.getMinutes() === 59
-        ) {
-          // Si la condition est vérifiée, envoyer la notification 2
-          await sendNotification2();
-        }
-      });
-    } catch (error) {
-      console.error(error);
-      setError(
-        "Une erreur s'est produite lors de la récupération des rendez-vous."
-      );
-    }
-  };
-
-  checkAndSendNotifications();
-  // Appel de la fonction pour vérifier et envoyer les notifications
-
-  useEffect(() => {
-    const checkAndSetNotificationColor = async () => {
-      try {
-        console.log("Avant la récupération des rendez-vous");
-        const response = await fetch(
-          `http://192.168.43.116:5000/api/rendezVous/getbyutlisateur/ut/${userId}`
-        );
-
-        if (!response.ok) {
-          throw new Error("Failed to fetch user's appointments");
-        }
-
-        const rendezVous = await response.json();
-        console.log(rendezVous);
-        // Par exemple, vous pouvez utiliser la date actuelle et comparer avec l'heure du rendez-vous
-        const now = new Date();
-        const appointmentTime =
-          new Date(/* Mettez ici la date et l'heure du rendez-vous */);
-
-        const twoHoursBefore = new Date(
-          appointmentTime.getTime() - 2 * 60 * 60 * 1000
-        );
-        const oneDayBefore = new Date(
-          appointmentTime.getTime() - 1 * 24 * 60 * 60 * 1000
-        );
-
-        // Si le rendez-vous est dans les deux heures suivantes, changer la couleur de l'icône en rouge
-        if (now >= twoHoursBefore && now < appointmentTime) {
-          setNotificationColor("red");
-        }
-
-        // Si le rendez-vous est dans la journée précédente, changer également la couleur de l'icône en rouge
-        if (now >= oneDayBefore && now < twoHoursBefore) {
-          setNotificationColor("red");
-        }
-      } catch (error) {
-        console.error(error);
-      }
-    };
-
-    // Appeler la fonction pour vérifier et définir la couleur de l'icône de notification
-    checkAndSetNotificationColor();
-  }, []); // Déclencher l'effet uniquement une fois au chargement du composant
-
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await fetch(
-          `http://192.168.43.116:5000/api/rendezVous/getRendez-vous/hier/${userId}`
-        );
-        if (!response.ok) {
-          throw new Error("Network response was not ok");
-        }
-        const responseData = await response.json();
-        setRendezVous(responseData);
-        console.log("rendezvous AAAAAAAAAAAAAAAAA");
-      } catch (error) {
-        console.error("Error fetching data:", error);
-      }
-    };
-
-    fetchData();
-  }, [userId]);
-
-  const handleImageClick = (rendezVousData) => {
-    setSelectedRendezVous(rendezVousData);
-  };
-
-  const sendNotification3 = async () => {
-    console.log("Sending push notification 2...");
-
-    // notification message
-    const message = {
-      to: expoPushToken,
-      sound: "default",
-      title: "Notification de Vacination!",
-      body: "Vous avez un rendez-vous de Vacination apres deux heure, n'oubliez pas!",
-    };
-
-    console.log("Notification message:", message);
-
-    try {
-      const response = await fetch("https://exp.host/--/api/v2/push/send", {
-        method: "POST",
-        headers: {
-          host: "exp.host",
-          accept: "application/json",
-          "accept-encoding": "gzip, deflate",
-          "content-type": "application/json",
-        },
-        body: JSON.stringify(message),
-      });
-
-      console.log("Response from server:", response);
-
-      if (response.ok) {
-        console.log("Notification sent successfully!");
-      } else {
-        console.error(
-          "Failed to send notification. Server response:",
-          response
-        );
-      }
-    } catch (error) {
-      console.error("Error while sending notification:", error);
-    }
-  };
-  const sendNotification4 = async () => {
-    console.log("Sending push notification 2...");
-
-    // notification message
-    const message = {
-      to: expoPushToken,
-      sound: "default",
-      title: "Notification de Vacination!",
-      body: "Vous avez un rendez-vous e Vacination demain, n'oubliez pas!",
-    };
-
-    console.log("Notification message:", message);
-
-    try {
-      const response = await fetch("https://exp.host/--/api/v2/push/send", {
-        method: "POST",
-        headers: {
-          host: "exp.host",
-          accept: "application/json",
-          "accept-encoding": "gzip, deflate",
-          "content-type": "application/json",
-        },
-        body: JSON.stringify(message),
-      });
-
-      console.log("Response from server:", response);
-
-      if (response.ok) {
-        console.log("Notification sent successfully!");
-      } else {
-        console.error(
-          "Failed to send notification. Server response:",
-          response
-        );
-      }
-    } catch (error) {
-      console.error("Error while sending notification:", error);
-    }
-  };
-  const checkAndSendNotificationsvac = async () => {
-    try {
-      console.log("Avant la récupération des rendez-vous");
-      const response = await fetch(
-        `http://192.168.43.116:5000/api/vacination/getvacinationbyid/idut/${userId}`
-      );
-
-      if (!response.ok) {
-        throw new Error("Failed to fetch user's appointments");
-      }
-
-      const rendezVous = await response.json();
-      console.log(rendezVous);
-      const now = new Date();
-
-      // Parcours des rendez-vous
-      rendezVous.forEach(async (rdv) => {
-        const appointmentTime = new Date(rdv.date);
-
-        appointmentTime.setHours(parseInt(rdv.heure.split(":")[0]));
-        appointmentTime.setMinutes(parseInt(rdv.heure.split(":")[1]));
-
-        // Calculer deux heures avant le rendez-vous
-        const twoHoursBefore = new Date(
-          appointmentTime.getTime() - 2 * 60 * 60 * 1000
-        );
-
-        // Vérifier si c'est le même jour que le rendez-vous et si c'est deux heures avant
-        if (
-          now.getFullYear() === appointmentTime.getFullYear() &&
-          now.getMonth() === appointmentTime.getMonth() &&
-          now.getDate() === appointmentTime.getDate() &&
-          now.getHours() === twoHoursBefore.getHours() &&
-          now.getMinutes() === twoHoursBefore.getMinutes()
-        ) {
-          // Si la condition est vérifiée, envoyer la notification 1
-          await sendNotification3();
-        }
-
-        // Vérifier si c'est la veille du rendez-vous à minuit et 39 minutes
-        if (
-          now.getFullYear() === appointmentTime.getFullYear() &&
-          now.getMonth() === appointmentTime.getMonth() &&
-          now.getDate() === appointmentTime.getDate() - 1 && // Vérifier si c'est la veille
-          now.getHours() === 0 &&
-          now.getMinutes() === 59
-        ) {
-          // Si la condition est vérifiée, envoyer la notification 2
-          await sendNotification4();
-        }
-      });
-    } catch (error) {
-      console.error(error);
-      setError(
-        "Une erreur s'est produite lors de la récupération des rendez-vous."
-      );
-    }
-  };
-  checkAndSendNotificationsvac();
+  };*/
 
   const logoutUser = async () => {
-    try {
-      // Nettoyer les données d'authentification dans AsyncStorage
-      await AsyncStorage.removeItem("userData");
-
-      // Effacer les données saisies précédemment dans le stockage local
-      await AsyncStorage.removeItem("email");
-      await AsyncStorage.removeItem("password");
-
-      // Réinitialiser les valeurs des champs de formulaire
-      setEmail("");
-      setPassword("");
-
-      // Rediriger l'utilisateur vers la page de connexion
+         
       navigation.navigate("LoginC");
-    } catch (error) {
-      console.error("Erreur lors de la déconnexion :", error);
-    }
+   
   };
 
   return (
@@ -598,7 +308,9 @@ export default function Dashboard({ navigation }) {
                   }
                 }}
               >
-                <TouchableOpacity>
+                <TouchableOpacity onPress={() => {
+                    navigation.navigate("dash");
+                  }} >
                   <View
                     style={{
                       flexDirection: "row",
@@ -1214,11 +926,10 @@ const styles = StyleSheet.create({
     height: 120,
     width: 120,
     borderRadius: 125 / 5,
-    justifyContent: "center",
-    alignItems: "center",
+ marginRight:40,
 
     borderWidth: 0,
     overflow: "hidden",
-    marginTop: 60,
+    marginTop: 50,
   },
 });

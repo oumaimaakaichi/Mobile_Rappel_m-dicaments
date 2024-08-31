@@ -38,7 +38,7 @@ import list from "../assets/hihi.png";
 export default function Contactt({ navigation }) {
   const [currentTab, setCurrentTab] = useState("Home");
 
-  const [showPopup, setShowPopup] = useState(false); // Déplacer showPopup à l'intérieur de la fonction composant
+  const [showPopup, setShowPopup] = useState(false); 
   const [isButtonVisible, setIsButtonVisible] = useState(true); // État pour gérer la visibilité du bouton
 
   const [showMenu, setShowMenu] = useState(false);
@@ -50,32 +50,32 @@ export default function Contactt({ navigation }) {
   const closeButtonOffset = useRef(new Animated.Value(0)).current;
   const isFocused = useIsFocused();
   let data = "";
-  useEffect(async () => {
-    data = await getClientData();
-    setUser(data);
-    console.log("ddddddd" + data?.avatar);
-    console.log("dddddd" + user);
-  }, []);
+  
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const data = await getClientData();
+        setUser(data);
+      } catch (error) {
+        console.error("Error fetchinsg client data:", error);
+      }
+    };
+    fetchData();
+  }, [isFocused]);
+
   const logoutUser = async () => {
     try {
-      // Nettoyer les données d'authentification dans AsyncStorage
-      await AsyncStorage.removeItem("userData");
-
-      // Effacer les données saisies précédemment dans le stockage local
-      await AsyncStorage.removeItem("email");
-      await AsyncStorage.removeItem("password");
-
-      // Réinitialiser les valeurs des champs de formulaire
-      setEmail("");
-      setPassword("");
-
-      // Rediriger l'utilisateur vers la page de connexion
+      await AsyncStorage.clear();
       navigation.navigate("LoginC");
     } catch (error) {
-      console.error("Erreur lors de la déconnexion :", error);
+      console.error("Error logging out:", error);
     }
   };
+const acc = async () => {
+         
+  navigation.navigate("dash");
 
+};
   return (
     <>
       <SafeAreaView style={styles.container}>
@@ -116,7 +116,9 @@ export default function Contactt({ navigation }) {
                   }
                 }}
               >
-                <TouchableOpacity>
+                <TouchableOpacity onPress={() => {
+                    acc();
+                  }}>
                   <View
                     style={{
                       flexDirection: "row",
@@ -640,11 +642,11 @@ const styles = StyleSheet.create({
   contactButton: {
     flexDirection: "row",
     alignItems: "center",
-    paddingHorizontal: 21,
+    paddingHorizontal: 20,
     paddingVertical: 10,
     backgroundColor: "transparent",
     borderRadius: 10,
-    marginHorizontal: 94,
+    marginHorizontal: 65,
   },
   contactButtonText: {
     color: "black",
@@ -653,8 +655,8 @@ const styles = StyleSheet.create({
     marginRight: 10,
   },
   contactButtonImage: {
-    width: 30,
-    height: 30,
+    width: 40,
+    height: 40,
     tintColor: "#rgb(97, 172, 243)",
     marginLeft: 200,
   },
@@ -665,13 +667,12 @@ const styles = StyleSheet.create({
   uploadBtnContainer: {
     height: 120,
     width: 120,
-    borderRadius: 125 / 2,
-    justifyContent: "center",
-    alignItems: "center",
+    borderRadius: 125 / 5,
+ marginRight:40,
 
     borderWidth: 0,
     overflow: "hidden",
-    marginTop: 60,
+    marginTop: 50,
   },
   button: {
     alignItems: "center",
@@ -718,15 +719,5 @@ const styles = StyleSheet.create({
     color: "white",
     fontWeight: "bold",
   },
-  uploadBtnContainer: {
-    height: 120,
-    width: 120,
-    borderRadius: 125 / 2,
-    justifyContent: "center",
-    alignItems: "center",
 
-    borderWidth: 0,
-    overflow: "hidden",
-    marginTop: 20,
-  },
 });

@@ -1,3 +1,4 @@
+import React, { useRef, useState, useEffect } from "react";
 import {
   Text,
   View,
@@ -7,18 +8,12 @@ import {
   TouchableOpacity,
   ImageBackground,
 } from "react-native";
-import { useRef, useState, useEffect } from "react";
 import { useNavigation } from "@react-navigation/native";
-
-import React from "react";
+import axios from "axios";
 import COLORS from "./config/COLORS";
 import SPACING from "./config/SPACING";
-import Ionicons from "@expo/vector-icons/Ionicons";
-import axios from "axios";
-
+import Toast from "react-native-toast-message";
 const DetailleRendezvous = ({ route }) => {
-  // État local pour stocker la liste des rendez-vous
-
   const { rendezVous } = route.params;
   const navigation = useNavigation();
   const [rendezVousList, setRendezVousList] = useState([]);
@@ -31,7 +26,7 @@ const DetailleRendezvous = ({ route }) => {
   const fetchRendezVousList = async () => {
     try {
       const response = await axios.get(
-        "http://192.168.43.116:5000/api/rendezVous/getRendez-vous"
+        "http://192.168.43.105:5000/api/rendezVous/getRendez-vous"
       );
       setRendezVousList(response.data);
     } catch (error) {
@@ -42,60 +37,61 @@ const DetailleRendezvous = ({ route }) => {
   useEffect(() => {
     fetchRendezVousList();
   }, []);
-  /*
-  const handleDelete = async () => {
+
+
+
+
+  const handleDelete = async (id) => {
     try {
-      await axios.delete(
-        `http://192.168.1.14:5000/api/rendezVous/supprimerRendez-vous/${rendezVous._id}`
-      );
-
-      const updatedRendezVousList = rendezVousList.filter(
-        (item) => item._id !== rendezVous._id
-      );
-      setRendezVousList(updatedRendezVousList);
-
-      navigation.navigate("AllRendez_vous", {
-        updatedList: updatedRendezVousList,
+      await fetch(`http://192.168.43.105:5000/api/rendezVous/supprimerRendez-vous/${rendezVous._id}`, {
+        method: "DELETE",
       });
-    } catch (error) {
-      console.error("Erreur lors de la suppression du rendez-vous : ", error);
-    }
-  };*/
-  const handleDelete = async () => {
-    try {
-      // Supprimer le rendez-vous depuis l'API
-      await axios.delete(
-        `http://192.168.43.116:5000/api/rendezVous/supprimerRendez-vous/${rendezVous._id}`
-      );
+      Toast.show({
+        position: "top",
+        type: "success",
 
-      // Mettre à jour la liste localement
-      const updatedRendezVousList = rendezVousList.filter(
-        (item) => item._id !== rendezVous._id
-      );
-      setRendezVousList(updatedRendezVousList);
+        text1: "Supprimer un Rendez-vous",
+        text2: " Rendez-vous supprimè avec succès",
+        
 
-      // Naviguer vers la page AllRendez_vous avec un paramètre de mise à jour
-      navigation.navigate("AllRendez_vous", {
-        updatedList: updatedRendezVousList,
+        autoHide: true,
+        visibilityTime: 8000,
+        autoHide: true,
+        onHide: () => {
+          navigation.navigate("AllRendez_vous");
+        },
+        onShow: () => {},
       });
+      fetchData();
     } catch (error) {
-      console.error("Erreur lors de la suppression du rendez-vous : ", error);
+      console.error("Erreur lors de la suppression du contact :", error);
     }
   };
+  
+ 
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    const year = date.getFullYear();
+    let month = date.getMonth() + 1;
+    let day = date.getDate();
 
-  // Dans le composant AllRendez_vous où la liste est affichée, vous pouvez mettre à jour la liste comme suit :
+    // Pad month and day with leading zeros if needed
+    if (month < 10) {
+      month = `0${month}`;
+    }
+    if (day < 10) {
+      day = `0${day}`;
+    }
 
+    return `${year}/${month}/${day}`;
+  };
   useEffect(() => {
     if (route.params && route.params.updatedList) {
-      // Mettre à jour la liste avec l'état temporaire
       setRendezVousList(route.params.updatedList);
     } else {
-      // Utiliser l'état temporaire si aucun paramètre de mise à jour n'est reçu
       setRendezVousList(tempRendezVousList);
     }
   }, [route.params, tempRendezVousList]);
-
-  // Dans le composant AllRendez_vous où la liste est affichée, vous pouvez mettre à jour la liste comme suit :
 
   useEffect(() => {
     if (route.params && route.params.updatedList) {
@@ -111,6 +107,7 @@ const DetailleRendezvous = ({ route }) => {
           style={{ width: "100%", height: 500 }}
         >
           <SafeAreaView>
+            <Toast/>
             <View
               style={{
                 paddingHorizontal: SPACING,
@@ -130,10 +127,9 @@ const DetailleRendezvous = ({ route }) => {
                   alignItems: "center",
                 }}
               >
-                <Ionicons
-                  name="chevron-back"
-                  color={COLORS.primary}
-                  size={SPACING * 3}
+                <Image
+                  source={require("../assets/back.png")}
+                  style={{ width: SPACING * 3, height: SPACING * 3 }}
                 />
               </TouchableOpacity>
               <View
@@ -143,22 +139,7 @@ const DetailleRendezvous = ({ route }) => {
                   paddingBottom: SPACING * 8,
                 }}
               >
-                <TouchableOpacity
-                  style={{
-                    backgroundColor: COLORS.white,
-                    width: SPACING * 4,
-                    height: SPACING * 4,
-                    borderRadius: SPACING * 2,
-                    justifyContent: "center",
-                    alignItems: "center",
-                  }}
-                >
-                  <Ionicons
-                    name="heart-outline"
-                    color={COLORS.primary}
-                    size={SPACING * 3}
-                  />
-                </TouchableOpacity>
+               
               </View>
             </View>
           </SafeAreaView>
@@ -192,7 +173,7 @@ const DetailleRendezvous = ({ route }) => {
               >
                 <Text
                   style={{
-                    color: COLORS.primary,
+                    color: "#3AA6B9",
                     fontWeight: "bold",
                     fontSize: SPACING * 1.7,
                   }}
@@ -220,7 +201,10 @@ const DetailleRendezvous = ({ route }) => {
                     marginRight: SPACING,
                   }}
                 >
-                  <Ionicons name="time" size={SPACING * 3} color="#01BACF" />
+                  <Image
+                    source={require("../assets/clockm.png")}
+                    style={{ width: SPACING * 3, height: SPACING * 3  , tintColor:"#3AA6B9"  , width:40 , height:40 }}
+                  />
                 </View>
                 <View style={{ marginRight: SPACING * 2 }}>
                   <Text
@@ -251,10 +235,9 @@ const DetailleRendezvous = ({ route }) => {
                     marginRight: SPACING,
                   }}
                 >
-                  <Ionicons
-                    name="calendar"
-                    size={SPACING * 3}
-                    color="#01BACF"
+                  <Image
+                    source={require("../assets/clandr.png")}
+                    style={{ width: SPACING * 3, height: SPACING * 3 , width:65 , height:65 , tintColor:"#3AA6B9"  ,marginTop:-20}}
                   />
                 </View>
                 <View style={{ marginRight: SPACING * 2 }}>
@@ -268,14 +251,15 @@ const DetailleRendezvous = ({ route }) => {
                     DATE
                   </Text>
                   <Text style={{ fontSize: SPACING * 1.6, fontWeight: "700" }}>
-                    ya {/*  {tour.rating} out of 5*/}
+                  {formatDate(rendezVous.date)}
+                    
                   </Text>
                 </View>
               </View>
             </View>
             <View>
               <Text style={{ color: COLORS.dark }}>
-                {/*{tour.description}*/}
+                {rendezVous.description}
               </Text>
             </View>
           </View>
@@ -285,10 +269,9 @@ const DetailleRendezvous = ({ route }) => {
         style={{
           position: "absolute",
           bottom: SPACING * 2,
-
           width: "100%",
-          flexDirection: "row", // Ajout de cette ligne pour aligner les éléments horizontalement
-          justifyContent: "center", // Pour centrer les éléments horizontalement
+          flexDirection: "row",
+          justifyContent: "center",
         }}
       >
         <TouchableOpacity
@@ -313,14 +296,12 @@ const DetailleRendezvous = ({ route }) => {
           >
             Modifier
           </Text>
-          <Ionicons
-            name="create-outline"
-            size={SPACING * 3}
-            color={COLORS.white}
+          <Image
+            source={require("../assets/edit.png")}
+            style={{ width: SPACING * 3, height: SPACING * 3  , tintColor:"white" , width:25 , height:25}}
           />
         </TouchableOpacity>
 
-        {/* Ajout du deuxième bouton */}
         <TouchableOpacity
           onPress={handleDelete}
           style={{
@@ -343,10 +324,9 @@ const DetailleRendezvous = ({ route }) => {
           >
             Supprimer
           </Text>
-          <Ionicons
-            name="trash-outline"
-            size={SPACING * 3}
-            color={COLORS.white}
+          <Image
+            source={require("../assets/delete.png")}
+            style={{ width: SPACING * 3, height: SPACING * 3  , tintColor:'white' , width:25 , height:25}}
           />
         </TouchableOpacity>
       </View>

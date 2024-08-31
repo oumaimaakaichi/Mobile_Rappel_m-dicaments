@@ -54,7 +54,7 @@ const Modifier = ({ route }) => {
   const updateRendezVous = async () => {
     try {
       const response = await fetch(
-        `http://192.168.43.116:5000/api/rendezVous/modifRendez-vous/${rendezVous._id}`,
+        `http://192.168.43.105:5000/api/rendezVous/modifR/${rendezVous._id}`,
         {
           method: "PUT",
           headers: {
@@ -84,7 +84,13 @@ const Modifier = ({ route }) => {
 
   return (
     <SafeAreaView style={{ flex: 1 }}>
-      <ScrollView style={{ flex: 1 }}>
+      <ScrollView style={{ flex: 1 ,backgroundColor:"white"}}>
+      <TouchableOpacity onPress={() => navigation.goBack()}>
+        <Image
+                  source={require('../assets/back.png')}
+                  style={{width:40 , height:40 , marginTop:20}}
+                />
+        </TouchableOpacity>
         <View style={{ padding: 20 }}>
           <View style={{ alignItems: "center" }}>
             <Image
@@ -100,7 +106,7 @@ const Modifier = ({ route }) => {
               color: "#01BACF",
             }}
           >
-            Nouveau Rendez-vous
+            Modifier Rendez-vous
           </Text>
           <View style={{ marginBottom: 20 }}>
             <Text style={{ fontSize: 16 }}>Objet du rendezVous</Text>
@@ -226,9 +232,9 @@ const Modifier = ({ route }) => {
           <TouchableOpacity onPress={updateRendezVous}>
             <View
               style={{
-                backgroundColor: "blue",
+                backgroundColor: "#01BACF",
                 padding: 15,
-                borderRadius: 5,
+                borderRadius: 10,
                 alignItems: "center",
               }}
             >

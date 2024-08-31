@@ -1,11 +1,14 @@
 {
   "expo": {
-    "name": "MonProjet1",
-    "slug": "m-push-notifications",
+    "name": "MedicoAlert",
+    "slug": "MedicoAlert",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./assets/vac.png",
     "userInterfaceStyle": "light",
+    "plugins": [
+      "expo-font"
+    ],
     "splash": {
       "image": "./assets/splash.png",
       "resizeMode": "contain",
@@ -20,20 +23,14 @@
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#ffffff",
-        "permissions": [
-          "NOTIFICATIONS"
-        ]
-      }
+        "backgroundColor": "#ffffff"
+      },
+      "permissions": [
+        "NOTIFICATIONS"
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    },
-    "extra": {
-      "eas": {
-        "projectId": "2cabd58e-13b7-4adc-bcd2-ea8675f091ce"
-      }
-    },
-    "owner": "lamyoucha"
+    }
   }
 }

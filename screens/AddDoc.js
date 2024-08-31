@@ -8,47 +8,47 @@ import {
   ScrollView,
   StyleSheet,
   Dimensions,
-  Button,
 } from "react-native";
 import * as DocumentPicker from "expo-document-picker";
 import * as ImagePicker from "expo-image-picker";
 import { getClientData } from "../utils/AsyncStorageClient";
 import { AntDesign } from "@expo/vector-icons";
-const { width: WIDTH } = Dimensions.get("window");
-// Menu
-
-import conta from "../assets/docIm-removebg-preview.jpg";
-import { Ionicons } from "@expo/vector-icons";
-
 import { LinearGradient } from "expo-linear-gradient";
-const AddDoc = (navigation) => {
+import Toast from "react-native-toast-message";
+import conta from "../assets/joo.png";
+
+const { width: WIDTH } = Dimensions.get("window");
+
+const AddDoc = ({ navigation }) => {
   const [selectedImage, setSelectedImage] = useState(null);
   const [user, setUser] = useState(null);
-  useEffect(async () => {
-    const userData = await getClientData();
-    setUser(userData.data._id);
-    console.log(user);
-  }, []);
   const [nom_document, setNom] = useState("");
-  const [utilisateur, setUtilisateur] = useState("");
+  const [selectedDocument, setSelectedDocument] = useState(null);
+  const [error, setError] = useState(false);
+
+  useEffect(() => {
+    let isMounted = true; // Track whether the component is mounted
+
+    const fetchUserData = async () => {
+      const userData = await getClientData();
+      if (isMounted) {
+        setUser(userData.data._id);
+      }
+    };
+
+    fetchUserData();
+
+    return () => {
+      isMounted = false; // Cleanup function to mark the component as unmounted
+    };
+  }, []);
+
   const handleDocumentPick = async () => {
     try {
-      // Vérifiez si une sélection de doctument est déjà en cours
-      if (isDocumentPicking) {
-        return;
-      }
-
-      // Définissez l'état ipour indiquer qu'une sélection de document est en cours
-      setIsDocumentPicking(true);
-
-      // Sélectionnez le docuument
       const result = await DocumentPicker.getDocumentAsync({
         type: "application/pdf",
       });
-      console.log(result);
-
-      // Réinitialisez l'état une fois la sélection terminée
-      setIsDocumentPicking(false);
+      setSelectedDocument(result.uri);
     } catch (error) {
       console.log("Erreur lors de la sélection du document PDF :", error);
     }
@@ -63,17 +63,13 @@ const AddDoc = (navigation) => {
         quality: 1,
       });
 
-      if (!result.cancelled) {
+      if (!result.canceled) {
         setSelectedImage(result.assets[0].uri);
       }
-      console.log(result.assets[0].uri);
     } catch (error) {
-      console.log("Erreur loors de la sélectinon de l'image :", error);
+      console.log("Erreur lors de la sélection de l'image :", error);
     }
   };
-
-  const [isDocumentPicking, setIsDocumentPicking] = useState(false);
-  const [selectedDocument, setSelectedDocument] = useState(null);
 
   const handleTakePhoto = async () => {
     try {
@@ -83,21 +79,26 @@ const AddDoc = (navigation) => {
         quality: 1,
       });
 
-      if (!result.cancelled) {
+      if (!result.canceled) {
         setSelectedImage(result.assets[0].uri);
       }
-      console.log(result.assets[0].uri);
     } catch (error) {
       console.log("Erreur lors de la prise de la photo :", error);
     }
   };
 
   const handleUpload = async () => {
+    if (!nom_document) {
+      setError(true);
+      return;
+    }
+
+    setError(false);
+
     try {
       const data = await getClientData();
       const formData = new FormData();
 
-      // Ajouter l'image sélectionnée au FormData
       if (selectedImage) {
         const imageFile = {
           uri: selectedImage,
@@ -107,7 +108,6 @@ const AddDoc = (navigation) => {
         formData.append("image", imageFile);
       }
 
-      // Ajouter le document sélectionné au FormData
       if (selectedDocument) {
         const documentFile = {
           uri: selectedDocument,
@@ -117,12 +117,10 @@ const AddDoc = (navigation) => {
         formData.append("document", documentFile);
       }
 
-      // Ajouter d'autres champs nécedssaires (nom_document, utilisateur, etc.) au FormData
       formData.append("nom_document", nom_document);
       formData.append("utilisateur", data.Data._id);
 
-      // Envoyer la requête POST au backend
-      const response = await fetch("http://192.168.43.116:5000/add-document", {
+      const response = await fetch("http://192.168.43.105:5000/add-document", {
         method: "POST",
         body: formData,
         headers: {
@@ -131,86 +129,64 @@ const AddDoc = (navigation) => {
       });
 
       const responseData = await response.json();
-      console.log("Réponse de l'API :", responseData);
+      if (response.ok) {
+        navigation.navigate('docc');
+      }
     } catch (error) {
       console.log("Erreur lors de l'envoi des fichiers à l'API :", error);
     }
   };
 
   return (
-    <ScrollView>
+    <ScrollView style={{ backgroundColor: "white" }}>
+      <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backIconContainer}>
+        <Image source={require('../assets/back.png')} style={{ width: 40, height: 40, marginBottom: 70 }} />
+      </TouchableOpacity>
       <View style={styles.container}>
-        <View style={styles.backIconContainer}>
-          <Ionicons
-            name="arrow-back"
-            size={24}
-            color="black"
-            onPress={() => {
-              navigation.navigate("doc");
-            }}
-          />
-        </View>
-        <Image
-          source={conta}
-          style={{
-            width: 220,
-            height: 200,
-            alignSelf: "center",
-            marginTop: 20,
-            marginBottom: 10,
-          }}
-        />
+        <Toast style={{ marginTop: 41 }} />
+        <Image source={conta} style={styles.headerImage} />
 
         <TouchableOpacity onPress={handleImagePick} style={styles.uploadButton}>
-          <AntDesign
-            name="upload"
-            color="rgb(70, 143, 183)"
-            size={25}
-            style={styles.icon}
-          />
-          <Text style={styles.txt}>Sélectionner une image du document</Text>
+          <Image source={require('../assets/pload.png')} style={styles.uploadIcon} />
+          <Text style={styles.uploadText}>Télécharger une photo</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity
-          onPress={handleTakePhoto}
-          style={styles.uploadButton1}
-        >
-          <AntDesign
-            name="camerao"
-            color="rgb(70, 143, 183)"
-            size={25}
-            style={styles.icon}
-          />
-          <Text style={styles.txt}>Prendre une nouvelle photo </Text>
+        <TouchableOpacity onPress={handleTakePhoto} style={styles.uploadButton}>
+          <Image source={require('../assets/camera-to-take-photos.png')} style={styles.cameraIcon} />
+          <Text style={styles.uploadText}>Prendre une nouvelle photo</Text>
         </TouchableOpacity>
-
+        {error && !selectedImage  && (
+          <Text style={{ color: "red", fontSize: 12, marginTop: 10 }}>
+            Veuillez sélectionner une image.
+          </Text>
+        )}
         <View style={styles.inputContainer}>
-          <AntDesign
-            name="mail"
-            color="rgb(70, 143, 183)"
-            size={20}
-            style={styles.icon}
-          />
+          <AntDesign name="mail" color="rgb(70, 143, 183)" size={20} style={styles.icon} />
           <TextInput
             placeholder="Nom du document"
             style={styles.input}
             onChangeText={(val) => setNom(val)}
           />
+          {error && !nom_document && (
+            <Text style={{ color: "red", fontSize: 12, marginTop: 10 }}>
+              Champ obligatoire
+            </Text>
+          )}
         </View>
-        {/* Afficher l'image sélectionnnée */}
+        
         {selectedImage && (
           <View style={styles.imageContainer}>
             <Image source={{ uri: selectedImage }} style={styles.image} />
           </View>
         )}
+
+        
       </View>
-      <View style={styles.button}>
-        <TouchableOpacity style={styles.signIn} onPress={handleUpload}>
-          <LinearGradient
-            colors={["rgb(97, 172, 243)", "rgb(97, 172, 243)"]}
-            style={styles.signIn}
-          >
-            <Text style={[styles.textSign, { color: "#fff" }]}>Ajouter</Text>
+
+      <View style={styles.buttonContainer}>
+        <TouchableOpacity style={styles.signInButton} onPress={handleUpload}>
+          <LinearGradient colors={["#61acf3", "#61acf3"]} style={styles.signInButton}>
+            <Text style={styles.signInText}>Ajouter</Text>
           </LinearGradient>
         </TouchableOpacity>
       </View>
@@ -224,9 +200,60 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     padding: 20,
+    backgroundColor: "white",
+  },
+  headerImage: {
+    width: 300,
+    height: 230,
+    alignSelf: "center",
+    marginTop: 130,
+    marginBottom: 10,
+  },
+  uploadButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: 20,
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 10,
+    backgroundColor: "#e0f0ff",
+  },
+  uploadIcon: {
+    width: 40,
+    height: 40,
+  },
+  cameraIcon: {
+    width: 37,
+    height: 37,
+    tintColor: "blue",
+  },
+  uploadText: {
+    fontSize: 16,
+    fontWeight: "500",
+    marginLeft: 10,
+  },
+  inputContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: "rgb(70, 143, 183)",
+    borderRadius: 5,
+    paddingHorizontal: 10,
+    marginTop: 20,
+    height: 50,
+    width: WIDTH - 40,
+  },
+  icon: {
+    marginRight: 10,
+  },
+  input: {
+    flex: 1,
+    height: 50,
+    borderWidth: 0,
+    marginLeft: 10,
   },
   imageContainer: {
-    marginTop: 21,
+    marginTop: 20,
     alignItems: "center",
   },
   image: {
@@ -235,109 +262,28 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     resizeMode: "cover",
   },
-  uploadBtnContainer: {
-    height: 120,
-    width: 120,
-    borderRadius: 125 / 5,
-    justifyContent: "center",
-    alignItems: "center",
-
-    borderWidth: 0,
-    overflow: "hidden",
-    marginTop: 20,
-  },
-  txt: {
-    fontSize: 15,
-    fontWeight: "300",
-  },
-  button: {
+  buttonContainer: {
     alignItems: "center",
     marginTop: 40,
+    marginBottom: 200,
     borderRadius: 8,
   },
-  signIn: {
+  signInButton: {
     width: WIDTH - 40,
     height: 50,
     justifyContent: "center",
     alignItems: "center",
     borderRadius: 8,
-    marginBottom: 30,
   },
-  textSign: {
+  signInText: {
     fontSize: 18,
     fontWeight: "bold",
-  },
-  loginFormTextInput: {
-    width: WIDTH - 55,
-    height: 45,
-    borderBottomWidth: 1,
-    borderColor: "#rgb(97, 172, 243)",
-    fontSize: 16,
-    paddingLeft: 45,
-    marginHorizontal: 25,
-    marginTop: 25,
-  },
-  popupContainer: {
-    backgroundColor: "white",
-    padding: 10,
-    width: 282,
-    borderRadius: 10,
-    elevation: 5, // Pour l'ombre sur Android
-    shadowColor: "#000", // Pour l'ombre sur iOS
-    shadowOffset: { width: 0, height: 2 }, // Pour l'ombre sur iOS
-    shadowOpacity: 0.25, // Pour l'ombre sur iOS
-    shadowRadius: 3.84, // Pour l'ombre sur iOS
-  },
-  uploadButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginTop: 60,
-  },
-  uploadButton1: {
-    flexDirection: "row",
-    alignItems: "flex-start",
-    marginTop: 25,
-  },
-  icon: {
-    marginRight: 10,
-  },
-  inputContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    borderWidth: 0.6, // Ajoutez d'autres styles de bordure selon vos besoins
-    borderColor: "rgb(70, 143, 183)", // Couleur de la bordure
-    borderRadius: 5, // Bordure arrondie
-    paddingHorizontal: 10, // Marge horizontale interne
-    marginTop: 20,
-    height: 50,
-    width: WIDTH - 40, // Espacement vers le haut
-  },
-
-  icon: {
-    marginRight: 11, // Espacement à droite de l'icône
-  },
-  input: {
-    flex: 1, // Pour que le TextInput prenne tout l'espace restant
-    height: 70, // Hauteur du TextInput
-    marginLeft: 10,
-    borderWidth: 0,
-    borderColor: "rgb(70, 143, 183)",
-    borderRadius: 8,
-    paddingHorizontal: 0,
-  },
-  buttons: {
-    backgroundColor: "rgb(70, 143, 183)",
-    padding: 10,
-    borderRadius: 5,
-    alignItems: "center",
-  },
-  buttonText: {
-    color: "white",
-    fontWeight: "bold",
+    color: "#fff",
   },
   backIconContainer: {
     position: "absolute",
     top: 30,
+    marginBottom: 51,
     left: 20,
     zIndex: 1,
   },

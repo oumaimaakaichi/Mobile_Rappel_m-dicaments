@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect } from "react";
+import React, { useRef, useState, useEffect , useCallback } from "react";
 import axios from "axios";
 import {
   Animated,
@@ -26,6 +26,7 @@ import logout from "../assets/logout.png";
 import { scheduleNotificationAsync } from "expo-notifications";
 
 // Menuuu
+import { useIsFocused , useFocusEffect } from "@react-navigation/native";
 import * as Notifications from "expo-notifications";
 import Contact from "../assets/b.png";
 import menu from "../assets/menu.png";
@@ -34,7 +35,7 @@ import medicament from "../assets/med.png";
 import p from "../assets/cjt.png";
 import rendez from "../assets/rendez.avif";
 import document from "../assets/doc.png";
-import { useIsFocused } from "@react-navigation/native";
+
 import historique from "../assets/histo.png";
 const { width: WIDTH } = Dimensions.get("window");
 import DetailleRendezvous from "./detailleRendez-vous";
@@ -193,6 +194,7 @@ export default function AllMedicament({ navigation }) {
         }
 
         if (nuit.nuit) {
+          console.log("ggggggg"+nuit.nuit)
           const hoursMinutes = nuit.DatePrise.split(":");
           const now = new Date();
           const notificationTime = new Date(
@@ -207,7 +209,7 @@ export default function AllMedicament({ navigation }) {
             content: {
               to: expoPushToken,
               title: "Rappel de médicament",
-              body: `C'est l'heure de prenddre le médicament: ${med.nom_medicament}`,
+              body: `C'est l'heure de prendre le médicament: ${med.nom_medicament}`,
               sound: "default",
             },
             trigger: {
@@ -220,14 +222,29 @@ export default function AllMedicament({ navigation }) {
       }
     });
   };
-
+  const fetchDataa = async () => {
+    const data = await getClientData();
+    try {
+      setIsLoading(true);
+      const response = await axios.get(
+        `http://192.168.43.105:5000/medUtilisateur/${data.Data._id}`
+      );
+      setData(response.data);
+      console.log(response.data);
+      setIsLoading(false);
+      scheduleNotifications(response.data);
+    } catch (error) {
+      console.error("Error fetching rendez-vous data: ", error);
+      setIsLoading(false);
+    }
+  };
   useEffect(() => {
     const fetchData = async () => {
       const data = await getClientData();
       try {
         setIsLoading(true);
         const response = await axios.get(
-          `http://192.168.43.116:5000/medUtilisateur/${data.Data._id}`
+          `http://192.168.43.105:5000/medUtilisateur/${data.Data._id}`
         );
         setData(response.data);
         console.log(response.data);
@@ -239,29 +256,22 @@ export default function AllMedicament({ navigation }) {
       }
     };
 
-    fetchData();
+    fetchDataa();
   }, []);
-  const fetchData = async () => {
-    const userData = await getClientData();
-    console.log("eeee" + userData);
-    const response = await fetch(
-      `http://192.168.43.116:5000/medUtilisateur/${data.Data._id}`
-    );
-    const jsonData = await response.json();
-    setData(jsonData);
-  };
 
-  const deleteContact = async (id) => {
-    try {
-      await fetch(`http://192.168.43.116:5000/deleteMed/${id}`, {
-        method: "DELETE",
-      });
 
-      fetchData();
-    } catch (error) {
-      console.error("Erreur lors de la suppression du contact :", error);
-    }
-  };
+  useEffect(() => {
+    fetchDataa();
+  }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      fetchDataa();
+    }, [])
+  );
+
+
+
   const renderItem = ({ item }) => {
     const navigateToDetails = () => {
       // Naviguer vers la page de détails en passant les données de l'élément sélectionné
@@ -280,12 +290,7 @@ export default function AllMedicament({ navigation }) {
             {"\n"} Nom Médicament : {item.nom_medicament}
           </Text>
 
-          <TouchableOpacity
-            style={{ marginTop: 25, marginLeft: 80 }}
-            onPress={() => deleteContact(item._id)}
-          >
-            <MaterialIcons name="delete" size={28} color="#D90115" />
-          </TouchableOpacity>
+         
         </View>
       </TouchableOpacity>
     );
@@ -295,16 +300,17 @@ export default function AllMedicament({ navigation }) {
     <>
       <SafeAreaView style={styles.container}>
         <ScrollView style={styles.s}>
-          <View
+        <View
             style={{
               justifyContent: "flex-start",
               padding: 15,
               alignItems: "center",
+              marginBottom: 20,
             }}
           >
             <TouchableOpacity style={styles.uploadBtnContainer}>
               <Image
-                source={{ uri: user?.avatar }}
+                source={{ uri: user?.Data?.avatar }}
                 style={{ width: "100%", height: "100%" }}
               />
             </TouchableOpacity>
@@ -314,13 +320,12 @@ export default function AllMedicament({ navigation }) {
                 fontSize: 22,
                 fontWeight: "bold",
                 color: "whitesmoke",
+                marginTop: 20,
                 marginRight: 70,
-                marginTop: 10,
               }}
             >
               {user?.Data?.nom} {user?.Data?.prenom}
             </Text>
-
             <View style={{ flexGrow: 1, marginTop: 10 }}>
               <TouchableOpacity
                 onPress={() => {
@@ -330,11 +335,9 @@ export default function AllMedicament({ navigation }) {
                   }
                 }}
               >
-                <TouchableOpacity
-                  onPress={() => {
+                <TouchableOpacity onPress={() => {
                     navigation.navigate("dash");
-                  }}
-                >
+                  }}>
                   <View
                     style={{
                       flexDirection: "row",
@@ -409,7 +412,7 @@ export default function AllMedicament({ navigation }) {
 
                 <TouchableOpacity
                   onPress={() => {
-                    navigation.navigate("doc");
+                    navigation.navigate("AllDoc");
                   }}
                 >
                   <View
@@ -680,7 +683,7 @@ export default function AllMedicament({ navigation }) {
                 </TouchableOpacity>
                 <TouchableOpacity
                   onPress={() => {
-                    navigation.navigate("signin");
+                    navigation.navigate("LoginC");
                   }}
                 >
                   <View
@@ -799,7 +802,7 @@ export default function AllMedicament({ navigation }) {
                     />
                   </TouchableOpacity>
                 </View>
-                {/* Votre code existant */}
+                {/* Votre code ant */}
                 <ScrollView style={{ marginVertical: 0 }}>
                   {/* Votre code existant */}
                   <ScrollView horizontal={true}>
@@ -838,18 +841,17 @@ const styles = StyleSheet.create({
   },
   s: {
     color: "#rgb(97, 172, 243)",
-    backgroundColor: "#rgb(97, 172, 243)",
+    backgroundColor: "#4793AF",
   },
   uploadBtnContainer: {
     height: 120,
     width: 120,
-    borderRadius: 125 / 2,
-    justifyContent: "center",
-    alignItems: "center",
+    borderRadius: 125 / 5,
+ marginRight:40,
 
     borderWidth: 0,
     overflow: "hidden",
-    marginTop: 60,
+    marginTop: 50,
   },
   s: {
     color: "#rgb(97, 172, 243)",
@@ -862,7 +864,7 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     backgroundColor: "transparent",
     borderRadius: 10,
-    marginHorizontal: 70,
+    marginHorizontal: 100,
     width: 30,
     height: 30,
   },
@@ -875,34 +877,24 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     width: 30,
     height: 30,
-    marginHorizontal: 70,
+    marginHorizontal: 131,
   },
   contactButtonImage: {
-    width: 32,
-    height: 32,
+    width: 42,
+    height: 42,
     tintColor: "#rgb(97, 172, 243)",
-    marginLeft: 220,
+    marginLeft: 130,
   },
-  uploadBtnContainer: {
-    height: 120,
-    width: 120,
-    borderRadius: 125 / 2,
-    justifyContent: "center",
-    alignItems: "center",
-
-    borderWidth: 0,
-    overflow: "hidden",
-    marginTop: 60,
-  },
+ 
   item: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#52D7FA",
+    backgroundColor: "#01BACF",
     padding: 10,
     marginVertical: 8,
-    marginHorizontal: 1,
+  
     borderRadius: 10,
-    width: 450,
+    width: 331,
     shadowOffset: {
       width: 0,
       height: 10,

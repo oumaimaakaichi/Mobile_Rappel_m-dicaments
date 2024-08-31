@@ -12,7 +12,7 @@ import {
   Alert, // Import manquant pour Alert
 } from "react-native";
 import profile from "../assets/prof.png";
-
+import Toast from "react-native-toast-message";
 import Icon from "react-native-vector-icons/Feather";
 import home from "../assets/home.png";
 import Hor from "../assets/hr.png";
@@ -32,6 +32,8 @@ import { Button } from "react-native-paper";
 import AllRendez_vous from "./allRendez-vous";
 import { Platform } from "react-native";
 import * as Notifications from "expo-notifications";
+import DateTimePickerModal from "react-native-modal-datetime-picker";
+
 import * as Device from "expo-device";
 import enfant1 from "../assets/enfant.png";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -62,18 +64,19 @@ export default function Rendez({ navigation }) {
   const handleSave = () => {};
   const [selectedTime, setSelectedTime] = useState("");
   const [currentTab, setCurrentTab] = useState("Home");
-  const [userId, setUserId] = useState("");
+  const [userId, setUserId] = useState();
   const [showMenu, setShowMenu] = useState(false);
   const offsetValue = useRef(new Animated.Value(0)).current;
   const scaleValue = useRef(new Animated.Value(1)).current;
   const closeButtonOffset = useRef(new Animated.Value(0)).current;
+  
   const isFocused = useIsFocused();
   useEffect(() => {
     const fetchData = async () => {
       try {
         const userData = await getClientData();
         setUser(userData);
-        setUserId(userData.Data._id); // Mettre à jour la variable d'état avec l'ID de l'utilisateur
+        setUserId(userData.Data._id); // Mettre à jouur la variable d'état avec il'ID de l'utilisateur
         console.log("UserData:", userData);
         console.log("User ID:", userData.Data._id);
       } catch (error) {
@@ -83,92 +86,6 @@ export default function Rendez({ navigation }) {
 
     fetchData();
   }, []);
-  /* const addAppointment = async () => {
-    try {
-      const dataToSend = {
-        date: date,
-        heure: heure,
-        objet: objet,
-        nom_docteur: nom_docteur,
-        lieu: lieu,
-      };
-
-      const response = await fetch(
-        "http://192.168.43.116:5000/api/rendezVous/ajoutren",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(dataToSend),
-        }
-      );
-
-      const data = await response.json();
-      console.log(data);
-
-      if (response.ok) {
-        // Si la requête est réussie, naviguez vers la page "AllRendez_vous"
-        navigation.navigate("AllRendez_vous");
-
-        // Vérifiez d'abord les autorisations de notification
-        const { status: existingStatus } =
-          await Notifications.getPermissionsAsync();
-        let finalStatus = existingStatus;
-        if (existingStatus !== "granted") {
-          // Si les autorisations n'ont pas déjà été accordées, demandez-les à l'utilisateur
-          const { status } = await Notifications.requestPermissionsAsync();
-          finalStatus = status;
-        }
-
-        if (finalStatus !== "granted") {
-          console.log("Permission not granted to send notifications");
-          return;
-        }
-
-        // Convertir l'heure de la chaîne en objet Date
-        const [hours, minutes] = heure.split(":");
-        const appointmentTime = new Date(date);
-        appointmentTime.setHours(hours);
-        appointmentTime.setMinutes(minutes);
-
-        // Calculer deux heures avant l'heure du rendez-vous
-        const twoHoursBefore = new Date(
-          appointmentTime.getTime() - 2 * 60 * 60 * 1000
-        );
-
-        //notif2
-        const midnightBefore = new Date(
-          date.getTime() - 1 * 24 * 60 * 60 * 1000
-        );
-        midnightBefore.setHours(19, 55, 0, 0); // Définir l'heure à 00:30
-
-        // Calculer le délai pour l'envoi de la notification avant minuit
-        const delayMidnight = midnightBefore - now;
-
-        //notif2
-
-        // Calculer le délai pour l'envoi de la notification
-        const now = new Date();
-        const delay = twoHoursBefore - now;
-
-        // Vérifier que le délai est positif avant de déclencher la notification
-        if (delay > 0) {
-          setTimeout(() => {
-            sendNotification(); // Appel de sendNotification
-          }, delay);
-        }
-        if (delayMidnight > 0) {
-          setTimeout(() => {
-            sendNotification2(); // Appel de sendNotification
-          }, delayMidnight);
-        }
-      }
-    } catch (error) {
-      console.error(error);
-      setError("Une erreur s'est produite lors de l'ajout du rendez-vous.");
-    }
-  };*/
 
   useEffect(() => {
     console.log("Registering for push notifications...");
@@ -284,9 +201,22 @@ export default function Rendez({ navigation }) {
 
   const addAppointment = async () => {
     try {
-      // Déclaration de la variable now au début de la fonction
+
+
+      if (
+        !date ||
+        !heure ||
+        !nom_docteur ||
+        !objet ||
+        !lieu 
+       
+      ) {
+        setError(true);
+        return false;
+      }
+      
       const u = userId;
-      console.log("bb " + " " + u);
+      console.log("b " + " " + u);
       const now = new Date();
 
       const dataToSend = {
@@ -295,11 +225,11 @@ export default function Rendez({ navigation }) {
         objet: objet,
         nom_docteur: nom_docteur,
         lieu: lieu,
-        utilisateur: u,
+        utilisateur: userId,
       };
 
       const response = await fetch(
-        "http://192.168.43.116.116:5000/api/rendezVous/ajoutren",
+        "http://192.168.43.105:5000/api/rendezVous/ajoutren",
         {
           method: "POST",
           headers: {
@@ -313,10 +243,23 @@ export default function Rendez({ navigation }) {
       console.log(data);
 
       if (response.ok) {
-        // Si la requête est réussie, naviguez vers la page "AllRendez_vous"
-        navigation.navigate("AllRendez_vous");
+        Toast.show({
+          position: "top",
+          type: "success",
 
-        // Vérifiez d'abord les autorisations de notification
+          text1: "Ajouter un rendez-vous",
+          text2: "Renez-vous ajouté avec succès",
+          
+
+          autoHide: true,
+          visibilityTime: 4000,
+          autoHide: true,
+          onHide: () => {
+            navigation.navigate("AllRendez_vous");
+          },
+          onShow: () => {},
+        });
+       
         const { status: existingStatus } =
           await Notifications.getPermissionsAsync();
         let finalStatus = existingStatus;
@@ -411,30 +354,16 @@ export default function Rendez({ navigation }) {
   };
 */
 
-  const logoutUser = async () => {
-    try {
-      // Nettoyer les données d'authentification dans AsyncStorage
-      await AsyncStorage.removeItem("userData");
+const logoutUser = async () => {
+         
+  navigation.navigate("LoginC");
 
-      // Effacer les données saisies précédemment dans le stockage local
-      await AsyncStorage.removeItem("email");
-      await AsyncStorage.removeItem("password");
-
-      // Réinitialiser les valeurs des champs de formulaire
-      setEmail("");
-      setPassword("");
-
-      // Rediriger l'utilisateur vers la page de connexion
-      navigation.navigate("LoginC");
-    } catch (error) {
-      console.error("Erreur lors de la déconnexion :", error);
-    }
-  };
+};
   return (
     <>
       <SafeAreaView style={styles.container}>
         <ScrollView style={styles.s}>
-          <View
+        <View
             style={{
               justifyContent: "flex-start",
               padding: 15,
@@ -455,6 +384,7 @@ export default function Rendez({ navigation }) {
                 fontWeight: "bold",
                 color: "whitesmoke",
                 marginTop: 20,
+                marginRight:80
               }}
             >
               {user?.Data?.nom} {user?.Data?.prenom}
@@ -469,7 +399,9 @@ export default function Rendez({ navigation }) {
                   }
                 }}
               >
-                <TouchableOpacity>
+                <TouchableOpacity onPress={() => {
+                    navigation.navigate("dash");
+                  }}>
                   <View
                     style={{
                       flexDirection: "row",
@@ -630,7 +562,7 @@ export default function Rendez({ navigation }) {
                       alignItems: "center",
                       paddingVertical: 8,
                       backgroundColor: "white",
-                      paddingLeft: 13,
+                      paddingLeft: 7,
                       paddingRight: 35,
 
                       borderRadius: 8,
@@ -640,8 +572,8 @@ export default function Rendez({ navigation }) {
                     <Image
                       source={cland}
                       style={{
-                        width: 35,
-                        height: 35,
+                        width: 45,
+                        height: 45,
                         tintColor: "#rgb(97, 172, 243)",
                       }}
                     ></Image>
@@ -650,7 +582,7 @@ export default function Rendez({ navigation }) {
                       style={{
                         fontSize: 15,
                         fontWeight: "bold",
-                        paddingLeft: 15,
+                        paddingLeft: 4,
                         color: "#rgb(97, 172, 243)",
                       }}
                     >
@@ -670,17 +602,17 @@ export default function Rendez({ navigation }) {
                       alignItems: "center",
                       paddingVertical: 8,
                       backgroundColor: "transparent",
-                      paddingLeft: 13,
-                      paddingRight: 35,
+                      paddingLeft: 2,
+                      paddingRight: 24,
                       borderRadius: 8,
-                      marginTop: 30,
+                      marginTop: 20,
                     }}
                   >
                     <Image
                       source={list}
                       style={{
-                        width: 35,
-                        height: 35,
+                        width: 55,
+                        height: 55,
                         tintColor: "white",
                       }}
                     ></Image>
@@ -728,7 +660,7 @@ export default function Rendez({ navigation }) {
                       style={{
                         fontSize: 15,
                         fontWeight: "bold",
-
+marginLeft:20,
                         color: "white",
                       }}
                     >
@@ -968,140 +900,158 @@ export default function Rendez({ navigation }) {
                   marginBottom: 20,
                 }}
               ></Text>
+<Toast/>
+<SafeAreaView style={styles.container}>
 
-              <SafeAreaView style={styles.container}>
-                <View style={styles.formContainer}>
-                  <View style={styles.form}>
-                    <View
-                      style={{
-                        justifyContent: "center",
-                        alignItems: "center",
-                      }}
+  <View style={styles.formContainer}>
+ 
+    <View style={styles.form}>
+      <View
+        style={{
+          justifyContent: "center",
+          alignItems: "center",
+        }}
+      >
+        <Image
+          source={require("../assets/ya.png")}
+          style={{ width: 170, height: 170 }}
+        />
+      </View>
+
+      <Text style={styles.title}>Nouveau rendez-vous</Text>
+
+      <View style={styles.inputContainer}>
+        <Text style={styles.label}>Objet du rendez-vous</Text>
+        <TextInput
+          style={styles.input}
+          placeholder="Objet"
+          value={objet}
+          onChangeText={setObjet}
+        />
+      </View>
+      {error && !objet && (
+                    <Text
+                      style={{ color: "red", fontSize: 10, fontWeight: "bold" }}
                     >
-                      <Image
-                        source={require("../assets/ya.png")} // Remplacez "votre_image.png" par le chemin de votre image
-                        style={{ width: 170, height: 170 }}
-                      />
-                    </View>
+                      {" "}
+                      champ obligatoire *
+                    </Text>
+                  )}
+      <View style={styles.inputContainer}>
+        <Text style={styles.label}>Lieu</Text>
+        <TextInput
+          style={styles.input}
+          placeholder="Lieu"
+          value={lieu}
+          onChangeText={setLieu}
+        />
+      </View>
+      {error && !lieu && (
+                    <Text
+                      style={{ color: "red", fontSize: 10, fontWeight: "bold" }}
+                    >
+                      {" "}
+                      champ obligatoire *
+                    </Text>
+                  )}
+      <View style={styles.inputContainer}>
+        <Text style={styles.label}>Nom du docteur</Text>
+        <TextInput
+          style={styles.input}
+          placeholder="Nom du docteur"
+          value={nom_docteur}
+          onChangeText={setNom_docteur}
+        />
+      </View>
+      {error && !nom_docteur && (
+                    <Text
+                      style={{ color: "red", fontSize: 10, fontWeight: "bold" }}
+                    >
+                      {" "}
+                      champ obligatoire *
+                    </Text>
+                  )}
 
-                    <Text style={styles.title}>Nouveau Rendez-vous</Text>
+      <View style={styles.inputContainer}>
+        <Text style={styles.label}>Date du rendez-vous :</Text>
+        <TouchableOpacity
+          onPress={() => setShowDatePicker(true)}
+          style={styles.dateInput}
+        >
+          <TextInput
+            style={[styles.input, { width: "85%" }]}
+            placeholder="Date"
+            value={date.toLocaleDateString("fr-FR")}
+            editable={false}
+          />
+           
+          <Icon
+            name="calendar"
+            size={20}
+            color="black"
+            style={styles.icon}
+          />
+        </TouchableOpacity>
+        
+      </View>
+      
+      <View style={styles.inputContainer}>
+        <Text style={styles.label}>Heure du rendez-vous :</Text>
 
-                    <View style={styles.inputContainer}>
-                      <Text style={styles.label}>Objet du rendezVous</Text>
-                      <TextInput
-                        style={styles.input}
-                        placeholder="Heure"
-                        value={objet}
-                        onChangeText={setObjet}
-                      />
-                    </View>
+        <TouchableOpacity
+          onPress={() => setShowTimePicker(true)}
+          style={styles.timeInput}
+        >
+          <TextInput
+            style={[styles.input, { width: "85%" }]}
+            placeholder="Heure"
+            value={heure}
+            editable={false}
+          />
+          <Icon
+            name="clock"
+            size={20}
+            color="black"
+            style={styles.icon}
+          />
+        </TouchableOpacity>
+      </View>
 
-                    <View style={styles.inputContainer}>
-                      <Text style={styles.label}>lieu</Text>
-                      <TextInput
-                        style={styles.input}
-                        placeholder="lieu"
-                        value={lieu}
-                        onChangeText={setLieu}
-                      />
-                    </View>
-                    <View style={styles.inputContainer}>
-                      <Text style={styles.label}>Nom du docteur</Text>
-                      <TextInput
-                        style={styles.input}
-                        placeholder="Heure"
-                        value={nom_docteur}
-                        onChangeText={setNom_docteur}
-                      />
-                    </View>
+      <DateTimePickerModal
+        isVisible={showDatePicker}
+        mode="date"
+        onConfirm={(selectedDate) => {
+          setDate(selectedDate);
+          setShowDatePicker(false);
+        }}
+        onCancel={() => setShowDatePicker(false)}
+        minimumDate={new Date()}
+      />
 
-                    <View style={styles.inputContainer}>
-                      <Text style={styles.label}>Date du rendez-vous:</Text>
-                      <TouchableOpacity
-                        onPress={() => setShowDatePicker(true)}
-                        style={styles.dateInput}
-                      >
-                        <TextInput
-                          style={[styles.input, { width: "85%" }]}
-                          placeholder="Date"
-                          // value={date.toLocaleDateString("fr-FR")}
-                          value={date.toLocaleDateString("fr-FR")}
-                          editable={false}
-                          onChangeText={setDate}
-                        />
-                        <Icon
-                          name="calendar"
-                          size={20}
-                          color="black"
-                          style={styles.icon}
-                        />
-                      </TouchableOpacity>
-                    </View>
+      <DateTimePickerModal
+        isVisible={showTimePicker}
+        value={date}
+        mode="time"
+        onConfirm={(selectedDate) => {
+          const selectedTime = selectedDate.toLocaleTimeString("fr-FR", {
+            hour: "2-digit",
+            minute: "2-digit",
+          });
+          setHeure(selectedTime);
+          setShowTimePicker(false);
+        }}
+        onCancel={() => setShowTimePicker(false)}
+      />
 
-                    <View style={styles.inputContainer}>
-                      <Text style={styles.label}>Heure du rendez-vous:</Text>
-                      <TouchableOpacity
-                        onPress={() => setShowTimePicker(true)}
-                        style={styles.timeInput}
-                      >
-                        <TextInput
-                          style={[styles.input, { width: "85%" }]}
-                          placeholder="Heure"
-                          value={heure}
-                          onChangeText={setHeure}
-                        />
-                        <Icon
-                          name="clock"
-                          size={20}
-                          color="black"
-                          style={styles.icon}
-                        />
-                      </TouchableOpacity>
-                    </View>
+      <TouchableOpacity onPress={addAppointment}>
+        <View style={styles.button}>
+          <Text style={styles.buttonText}>Enregistrer</Text>
+        </View>
+      </TouchableOpacity>
+    </View>
+  </View>
+</SafeAreaView>
 
-                    {showDatePicker && (
-                      <DatePicker
-                        style={{ width: "100%", color: "black" }}
-                        value={date}
-                        mode="date"
-                        display="default"
-                        minimumDate={new Date()}
-                        onChange={(event, selectedDate) => {
-                          const currentDate = selectedDate || date;
-                          setDate(currentDate);
-                          setShowDatePicker(false);
-                        }}
-                      />
-                    )}
-
-                    {showTimePicker && (
-                      <DatePicker
-                        style={{ width: "100%", color: "black" }}
-                        value={date}
-                        mode="time"
-                        display="default"
-                        onChange={(event, selectedDate) => {
-                          if (selectedDate) {
-                            const selectedTime =
-                              selectedDate.toLocaleTimeString("fr-FR", {
-                                hour: "2-digit",
-                                minute: "2-digit",
-                              });
-                            setHeure(selectedTime); // Mettre à jour l'état `heure` avec la nouvelle heure
-                          }
-                          setShowTimePicker(false);
-                        }}
-                      />
-                    )}
-
-                    <TouchableOpacity onPress={addAppointment}>
-                      <View style={styles.button}>
-                        <Text style={styles.buttonText}>Enregistrer</Text>
-                      </View>
-                    </TouchableOpacity>
-                  </View>
-                </View>
-              </SafeAreaView>
             </Animated.View>
           </ScrollView>
         </Animated.View>
@@ -1152,6 +1102,7 @@ const styles = StyleSheet.create({
     backgroundColor: "white",
     paddingHorizontal: 15,
     paddingVertical: 20,
+    width:380
   },
   form: {
     backgroundColor: "#FFFFFF",
@@ -1211,15 +1162,13 @@ const styles = StyleSheet.create({
   uploadBtnContainer: {
     height: 120,
     width: 120,
-    borderRadius: 125 / 2,
-    justifyContent: "center",
-    alignItems: "center",
+    borderRadius: 125 / 5,
+ marginRight:80,
 
     borderWidth: 0,
     overflow: "hidden",
     marginTop: 60,
   },
-
   label: {
     fontSize: 16,
     marginBottom: 5,

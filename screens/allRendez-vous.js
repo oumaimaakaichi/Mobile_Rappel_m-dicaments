@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect } from "react";
+import React, { useRef, useState, useEffect ,useCallback} from "react";
 import axios from "axios";
 import {
   Animated,
@@ -13,13 +13,15 @@ import {
 } from "react-native";
 import profile from "../assets/prof.png";
 import { getClientData } from "../utils/AsyncStorageClient";
-
+import { useFocusEffect } from '@react-navigation/native';
 // Tab ICons...
 import home from "../assets/home.png";
 import Hor from "../assets/hr.png";
 import logout from "../assets/logout.png";
-
-// Menu
+import * as Permissions from 'expo-permissions';
+import * as Notifications from 'expo-notifications';
+import { Platform } from 'react-native';
+//u
 import enfant1 from "../assets/enfant.png";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import cland from "../assets/clandr.png";
@@ -36,14 +38,17 @@ import historique from "../assets/histo.png";
 import { useRoute } from "@react-navigation/native";
 
 import DetailleRendezvous from "./detailleRendez-vous";
-export default function AllRendez_vous({ navigation }) {
+export default function 
+
+
+AllRendez_vous({ navigation }) {
   const [currentTab, setCurrentTab] = useState("Home");
 
   const [showMenu, setShowMenu] = useState(false);
 
   const [user, setUser] = useState("");
   const offsetValue = useRef(new Animated.Value(0)).current;
-  // Scale Intially must be One...
+  // Scale Intiallst be One...
   const scaleValue = useRef(new Animated.Value(1)).current;
   const closeButtonOffset = useRef(new Animated.Value(0)).current;
   const [rendezVousList, setRendezVousList] = useState([]);
@@ -59,25 +64,134 @@ export default function AllRendez_vous({ navigation }) {
     }
   }, [route.params]);
 
+
+
+  const getNotificationPermission = async () => {
+    const { status: existingStatus } = await Permissions.getAsync(
+      Permissions.NOTIFICATIONS
+    );
+    let finalStatus = existingStatus;
+    if (existingStatus !== "granted") {
+      const { status } = await Permissions.askAsync(Permissions.NOTIFICATIONS);
+      finalStatus = status;
+    }
+    return finalStatus === "granted";
+  };
+  
   useEffect(() => {
-    const fetchData = async () => {
+    registerForPushNotificationsAsync()
+      .then((token) => {
+        console.log("tokenn: ", token);
+        setExpoPushToken(token);
+      })
+      .catch((err) => console.log(err));
+  }, []);
+ 
+
+  const scheduleNotificationss = async (rendezvous) => {
+    console.log("baba"+rendezvous)
+    rendezvous.forEach(async (item) => {
+      const rendezvousTimeParts = item.heure.split(":");
+      const rendezvousDate = new Date(item.date);
+      rendezvousDate.setHours(parseInt(rendezvousTimeParts[0], 10));
+      rendezvousDate.setMinutes(parseInt(rendezvousTimeParts[1], 10));
+  
+      const notificationDate = new Date(
+        rendezvousDate.getTime() - 2 * 60 * 60 * 1000
+      );
+  
+      if (notificationDate > new Date()) {
+        await Notifications.scheduleNotificationAsync({
+          content: {
+            title: "Rappel de rendez-vous",
+            body: `Vous avez un rendez-vous à ${item.heure} dans ${item.lieu}`,
+            data: { item },
+            sound: 'default'
+          },
+          trigger: { date: notificationDate },
+        });
+      }
+    });
+  };
+
+
+  const fetchData = async () => {
+    try {
+      const data = await getClientData();
+      setIsLoading(true);
+      const response = await axios.get(
+        `http://192.168.43.105:5000/api/rendezVous/rendezVous/${data?.Data?._id}`
+      );
+      
+      setData(response.data);
+      scheduleNotificationss(response.data)
+      setIsLoading(false);
+    } catch (error) {
+      console.error("Error fetching rendez-vous data: ", error);
+      setIsLoading(false);
+    }
+  };
+
+  async function registerForPushNotificationsAsync() {
+    let token;
+    if (Platform.OS === "android") {
+      await Notifications.setNotificationChannelAsync("default", {
+        name: "default",
+        importance: Notifications.AndroidImportance.MAX,
+        vibrationPattern: [0, 250, 250, 250],
+        lightColor: "#FF231F7C",
+        sound: 'default',  
+      });
+    }
+    
+    if (Platform.OS === "ios") {
+      await Notifications.setNotificationChannelAsync("default", {
+        name: "default",
+        importance: Notifications.AndroidImportance.MAX,
+        vibrationPattern: [0, 250, 250, 250],
+        sound: 'default', 
+      });
+  
+      const { status } = await Permissions.askAsync(Permissions.NOTIFICATIONS);
+      if (status !== "granted") {
+        alert("Failed to get push token for push notification!");
+        return;
+      }
+    }
+  
+    token = (await Notifications.getExpoPushTokenAsync()).data;
+    console.log(token);
+  
+    return token;
+  }
+  useEffect(() => {
+    const fetchDataa = async () => {
       const data = await getClientData();
       setUser(data);
-      console.log("dddfd" + data.email);
+      console.log("d" + data.email);
     };
 
-    fetchData();
+    fetchDataa();
   }, []);
 
-  // Définir les données de la liste
+  useEffect(() => {
+    fetchData();
+    scheduleNotificationss()
+    getNotificationPermission
+  }, []);
 
-  // Fonction de rendu des éléments de la liste
+  useFocusEffect(
+    useCallback(() => {
+      fetchData();
+    }, [])
+  );
   useEffect(() => {
     const fetchData = async () => {
       try {
+        const data = await getClientData();
         setIsLoading(true);
         const response = await axios.get(
-          "http://192.168.43.116:5000/api/rendezVous/getRendez-vous"
+          `http://192.168.43.105:5000/api/rendezVous/rendezVous/${data?.Data?._id}`
         );
         setData(response.data);
         setIsLoading(false);
@@ -115,10 +229,10 @@ export default function AllRendez_vous({ navigation }) {
     </Text>*/}
           <Text style={styles.title}>
             <Text style={styles.whiteText}>
-              Date de prochain rendezVous : {"\n"}{" "}
+              Date de rendezVous : {"\n"}{" "}
               <Text style={styles.blackText}>{formattedDate}</Text>
             </Text>
-            {"\n"} l'heure de rendezVous :{" "}
+            {"\n"} Heure rendez-vous :{" "}
             <Text style={styles.blackText}>{item.heure}</Text>
           </Text>
         </View>
@@ -126,25 +240,10 @@ export default function AllRendez_vous({ navigation }) {
     );
   };
   const logoutUser = async () => {
-    try {
-      // Nettoyer les données d'authentification dans AsyncStorage
-      await AsyncStorage.removeItem("userData");
-
-      // Effacer les données saisies précédemment dans le stockage local
-      await AsyncStorage.removeItem("email");
-      await AsyncStorage.removeItem("password");
-
-      // Réinitialiser les valeurs des champs de formulaire
-      setEmail("");
-      setPassword("");
-
-      // Rediriger l'utilisateur vers la page de connexion
-      navigation.navigate("LoginC");
-    } catch (error) {
-      console.error("Erreur lors de la déconnexion :", error);
-    }
-  };
-
+         
+    navigation.navigate("LoginC");
+ 
+};
   return (
     <>
       <SafeAreaView style={styles.container}>
@@ -170,6 +269,7 @@ export default function AllRendez_vous({ navigation }) {
                 fontWeight: "bold",
                 color: "whitesmoke",
                 marginTop: 20,
+                marginRight: 70,
               }}
             >
               {user?.Data?.nom} {user?.Data?.prenom}
@@ -184,7 +284,9 @@ export default function AllRendez_vous({ navigation }) {
                   }
                 }}
               >
-                <TouchableOpacity>
+                <TouchableOpacity  onPress={() => {
+                    navigation.navigate("dash");
+                  }}>
                   <View
                     style={{
                       flexDirection: "row",
@@ -345,7 +447,7 @@ export default function AllRendez_vous({ navigation }) {
                       alignItems: "center",
                       paddingVertical: 8,
                       backgroundColor: "transparent",
-                      paddingLeft: 13,
+                      paddingLeft: 8,
                       paddingRight: 35,
 
                       borderRadius: 8,
@@ -365,7 +467,7 @@ export default function AllRendez_vous({ navigation }) {
                       style={{
                         fontSize: 15,
                         fontWeight: "bold",
-
+marginLeft:10,
                         color: "white",
                       }}
                     >
@@ -383,9 +485,9 @@ export default function AllRendez_vous({ navigation }) {
                     style={{
                       flexDirection: "row",
                       alignItems: "center",
-                      paddingVertical: 8,
+                      paddingVertical: 5,
                       backgroundColor: "white",
-                      paddingLeft: 13,
+                      paddingLeft: 6,
                       paddingRight: 35,
                       borderRadius: 8,
                       marginTop: 30,
@@ -394,8 +496,8 @@ export default function AllRendez_vous({ navigation }) {
                     <Image
                       source={list}
                       style={{
-                        width: 35,
-                        height: 35,
+                        width: 50,
+                        height: 50,
                         tintColor: "#rgb(97, 172, 243)",
                       }}
                     ></Image>
@@ -729,17 +831,7 @@ const styles = StyleSheet.create({
     color: "#rgb(97, 172, 243)",
     backgroundColor: "#0147A6",
   },
-  uploadBtnContainer: {
-    height: 120,
-    width: 120,
-    borderRadius: 125 / 2,
-    justifyContent: "center",
-    alignItems: "center",
 
-    borderWidth: 0,
-    overflow: "hidden",
-    marginTop: 60,
-  },
   whiteText: {
     color: "white",
   },
@@ -747,20 +839,16 @@ const styles = StyleSheet.create({
     color: "#0147A6",
   },
 
-  s: {
-    color: "#rgb(97, 172, 243)",
-    backgroundColor: "#0147A6",
-  },
+
   uploadBtnContainer: {
     height: 120,
     width: 120,
-    borderRadius: 125 / 2,
-    justifyContent: "center",
-    alignItems: "center",
+    borderRadius: 125 / 5,
+ marginRight:40,
 
     borderWidth: 0,
     overflow: "hidden",
-    marginTop: 60,
+    marginTop: 50,
   },
   item: {
     flexDirection: "row",
@@ -770,7 +858,7 @@ const styles = StyleSheet.create({
     marginVertical: 8,
     marginHorizontal: 16,
     borderRadius: 10,
-    width: 450,
+    width: 360,
     shadowOffset: {
       width: 0,
       height: 10,

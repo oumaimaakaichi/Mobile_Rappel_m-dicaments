@@ -103,7 +103,7 @@ const LoginC = ({ navigation }) => {
       return;
     }
 
-    fetch("http://192.168.43.116:5000/api/utlisateur/login", {
+    fetch("http://192.168.43.105:5000/api/utlisateur/login", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -115,15 +115,21 @@ const LoginC = ({ navigation }) => {
     })
       .then((response) => {
         if (!response.ok) {
+          Toast.show({
+            type: 'error',
+            text1:'Connexion éroner',
+            text2:'vérifier votre champs',
+            visibilityTime: 9000,
+    
+          })  
+          
+          
           throw new Error("Identifiants invalides");
         }
         return response.json();
       })
       .then((res) => {
-        /* console.log("Réponse de l'API :", res); // Afficher la réponse complète de l'API
-        console.log("Contenu de res.Data :", res.Data); // Afficher le contenu de res.Data
-        console.log("Contenu de res.Data.email :", res.Data.email); // Tentative d'accéder à res.Data.email
-        storeClientData(res.Data);*/
+       
         navigation.navigate("dash");
         console.log("Réponse de l'API :", res); // Afficher la réponse complète de l'API
         storeClientData(res); // Enregistrer la réponse complète dans AsyncStorage
@@ -143,12 +149,12 @@ const LoginC = ({ navigation }) => {
   const [modalVisible, setModalVisible] = useState(false);
   const [email, setEmail] = useState("");
   const sendPasswordReset = () => {
-    fetch("http://192.168.43.116:5000/api/utlisateur/emailyni", {
+    fetch("http://192.168.43.105:5000/api/utlisateur/emailyni", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ email: email }), // Supposant que "email" contient l'adresse e-mail saisie par l'utilisateur
+      body: JSON.stringify({ email: email }), // Supposant quue "emaail" contient l'adresse e-mail saisie par l'utilisateur
     })
       .then((response) => {
         if (!response.ok) {
@@ -174,8 +180,8 @@ const LoginC = ({ navigation }) => {
         return response.json();
       })
       .then((data) => {
-        // Traitez la réponse de l'API, par exemple affichez un message de succès à l'utilisateur
-        console.log(data);
+        
+       
         setModalVisible(false);
         // Afficher un message à l'utilisateur indiquant que l'e-mail de réinitialisation a été envoyé avec succès
       })
@@ -202,7 +208,7 @@ const LoginC = ({ navigation }) => {
               marginLeft: 10,
               marginRight: 10,
               textAlign: "center",
-              marginTop: 120,
+              marginTop: 160,
               borderRadius: 20,
             },
           ]}
@@ -369,7 +375,7 @@ const LoginC = ({ navigation }) => {
                 style={[
                   styles.textSign,
                   {
-                    color: "#01BACF",
+                    color: "#0EBFE3",
                   },
                 ]}
               >
@@ -377,7 +383,7 @@ const LoginC = ({ navigation }) => {
               </Text>
             </TouchableOpacity>
             <TouchableOpacity onPress={() => setModalVisible(true)}>
-              <Text style={{ color: "blue", marginTop: 10 }}>
+              <Text style={{ color: "#0EBFE3", marginTop: 10 }}>
                 Mot de passe oublié?
               </Text>
             </TouchableOpacity>

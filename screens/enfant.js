@@ -83,93 +83,7 @@ export default function enfant({ navigation }) {
 
     fetchData();
   }, []);
-  /* const addAppointment = async () => {
-    try {
-      const dataToSend = {
-        date: date,
-        heure: heure,
-        objet: objet,
-        nom_docteur: nom_docteur,
-        lieu: lieu,
-      };
-
-      const response = await fetch(
-        "http://192.168.43.116:5000/api/rendezVous/ajoutren",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(dataToSend),
-        }
-      );
-
-      const data = await response.json();
-      console.log(data);
-
-      if (response.ok) {
-        // Si la requête est réussie, naviguez vers la page "AllRendez_vous"
-        navigation.navigate("AllRendez_vous");
-
-        // Vérifiez d'abord les autorisations de notification
-        const { status: existingStatus } =
-          await Notifications.getPermissionsAsync();
-        let finalStatus = existingStatus;
-        if (existingStatus !== "granted") {
-          // Si les autorisations n'ont pas déjà été accordées, demandez-les à l'utilisateur
-          const { status } = await Notifications.requestPermissionsAsync();
-          finalStatus = status;
-        }
-
-        if (finalStatus !== "granted") {
-          console.log("Permission not granted to send notifications");
-          return;
-        }
-
-        // Convertir l'heure de la chaîne en objet Date
-        const [hours, minutes] = heure.split(":");
-        const appointmentTime = new Date(date);
-        appointmentTime.setHours(hours);
-        appointmentTime.setMinutes(minutes);
-
-        // Calculer deux heures avant l'heure du rendez-vous
-        const twoHoursBefore = new Date(
-          appointmentTime.getTime() - 2 * 60 * 60 * 1000
-        );
-
-        //notif2
-        const midnightBefore = new Date(
-          date.getTime() - 1 * 24 * 60 * 60 * 1000
-        );
-        midnightBefore.setHours(19, 55, 0, 0); // Définir l'heure à 00:30
-
-        // Calculer le délai pour l'envoi de la notification avant minuit
-        const delayMidnight = midnightBefore - now;
-
-        //notif2
-
-        // Calculer le délai pour l'envoi de la notification
-        const now = new Date();
-        const delay = twoHoursBefore - now;
-
-        // Vérifier que le délai est positif avant de déclencher la notification
-        if (delay > 0) {
-          setTimeout(() => {
-            sendNotification(); // Appel de sendNotification
-          }, delay);
-        }
-        if (delayMidnight > 0) {
-          setTimeout(() => {
-            sendNotification2(); // Appel de sendNotification
-          }, delayMidnight);
-        }
-      }
-    } catch (error) {
-      console.error(error);
-      setError("Une erreur s'est produite lors de l'ajout du rendez-vous.");
-    }
-  };*/
-
+  
   useEffect(() => {
     console.log("Registering for push notifications...");
     registerForPushNotificationsAsync()
@@ -204,8 +118,7 @@ export default function enfant({ navigation }) {
         alert("Failed to get push token for push notification!");
         return;
       }
-      // Learn more about projectId:
-      // https://docs.expo.dev/push-notifications/push-notifications-setup/#configure-projectid
+     
       token = (
         await Notifications.getExpoPushTokenAsync({
           projectId: "2cabd58e-13b7-4adc-bcd2-ea8675f091ce",
@@ -281,8 +194,24 @@ export default function enfant({ navigation }) {
       console.error("Error while sending notification:", error);
     }
   };
+  const [isTimePickerVisible, setTimePickerVisibility] = useState(false);
+
+
 
   const addAppointment = async () => {
+
+
+    if (
+      !date ||
+      !heure ||
+     
+      !objet ||
+      !lieu 
+     
+    ) {
+      setError(true);
+      return false;
+    }
     try {
       // Déclaration de la variable now au début de la fonction
       const u = userId;
@@ -298,7 +227,7 @@ export default function enfant({ navigation }) {
       };
 
       const response = await fetch(
-        "http://192.168.43.116:5000/api/vacination/ajoutVacination",
+        "http://192.168.43.105:5000/api/vacination/ajoutVacination",
         {
           method: "POST",
           headers: {
@@ -375,60 +304,12 @@ export default function enfant({ navigation }) {
       setError("Une erreur s'est produite lors de l'ajout du rendez-vous.");
     }
   };
-  /*const addAppointment = async () => {
-    try {
-      // Utilisez directement la variable d'état userId pour obtenir l'ID de l'utilisateur connecté
-      const u = userId;
-      console.log("bb " + " " + u);
-      // Autres étapes d'enregistrement du rendez-vous...
+  
+const logoutUser = async () => {
+         
+  navigation.navigate("LoginC");
 
-      const dataToSend = {
-        utilisateur: u, // Utiliser l'ID de l'utilisateur connecté
-        date: date,
-        heure: heure,
-        objet: objet,
-        nom_docteur: nom_docteur,
-        lieu: lieu,
-      };
-
-      const response = await fetch(
-        "http://192.168.1.14:5000/api/rendezVous/ajoutren",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(dataToSend),
-        }
-      );
-
-      // Autres étapes d'enregistrement du rendez-vous...
-    } catch (error) {
-      console.error(error);
-      setError("Une erreur s'est produite lors de l'ajout du rendez-vous.");
-    }
-  };
-*/
-
-  const logoutUser = async () => {
-    try {
-      // Nettoyer les données d'authentification dans AsyncStorage
-      await AsyncStorage.removeItem("userData");
-
-      // Effacer les données saisies précédemment dans le stockage local
-      await AsyncStorage.removeItem("email");
-      await AsyncStorage.removeItem("password");
-
-      // Réinitialiser les valeurs des champs de formulaire
-      setEmail("");
-      setPassword("");
-
-      // Rediriger l'utilisateur vers la page de connexion
-      navigation.navigate("LoginC");
-    } catch (error) {
-      console.error("Erreur lors de la déconnexion :", error);
-    }
-  };
+};
   return (
     <>
       <SafeAreaView style={styles.container}>
@@ -447,13 +328,13 @@ export default function enfant({ navigation }) {
                 style={{ width: "100%", height: "100%" }}
               />
             </TouchableOpacity>
-
             <Text
               style={{
                 fontSize: 22,
                 fontWeight: "bold",
                 color: "whitesmoke",
                 marginTop: 20,
+                marginRight: 70,
               }}
             >
               {user?.Data?.nom} {user?.Data?.prenom}
@@ -468,7 +349,9 @@ export default function enfant({ navigation }) {
                   }
                 }}
               >
-                <TouchableOpacity>
+                <TouchableOpacity onPress={() => {
+                    navigation.navigate("dash");
+                  }}>
                   <View
                     style={{
                       flexDirection: "row",
@@ -776,45 +659,7 @@ export default function enfant({ navigation }) {
                     </Text>
                   </View>
                 </TouchableOpacity>
-                {/* <TouchableOpacity
-                  onPress={() => {
-                    navigation.navigate("DashHoraire");
-                  }}
-                >
-                  <View
-                    style={{
-                      flexDirection: "row",
-                      alignItems: "center",
-                      paddingVertical: 8,
-                      backgroundColor: "transparent",
-                      paddingLeft: 13,
-                      paddingRight: 35,
-                      borderRadius: 8,
-                      marginTop: 20,
-                    }}
-                  >
-                    <Image
-                      source={Hor}
-                      style={{
-                        width: 25,
-                        height: 25,
-                        tintColor: "white",
-                      }}
-                    ></Image>
-
-                    <Text
-                      style={{
-                        fontSize: 15,
-                        fontWeight: "bold",
-                        paddingLeft: 15,
-                        color: "white",
-                      }}
-                    >
-                      Rendez-vous{" "}
-                    </Text>
-                  </View>
-                </TouchableOpacity>
-*/}
+                
 
                 <TouchableOpacity
                   onPress={() => {
@@ -993,10 +838,18 @@ export default function enfant({ navigation }) {
                       <Text style={styles.label}>Objet du rendezVous</Text>
                       <TextInput
                         style={styles.input}
-                        placeholder="Heure"
+                        placeholder="Objet"
                         value={objet}
                         onChangeText={setObjet}
                       />
+   {error && !objet && (
+                    <Text
+                      style={{ color: "red", fontSize: 10, fontWeight: "bold" }}
+                    >
+                      {" "}
+                      champ obligatoire *
+                    </Text>
+                  )}
                     </View>
 
                     <View style={styles.inputContainer}>
@@ -1007,6 +860,14 @@ export default function enfant({ navigation }) {
                         value={lieu}
                         onChangeText={setLieu}
                       />
+                         {error && !lieu && (
+                    <Text
+                      style={{ color: "red", fontSize: 10, fontWeight: "bold" }}
+                    >
+                      {" "}
+                      champ obligatoire *
+                    </Text>
+                  )}
                     </View>
 
                     <View style={styles.inputContainer}>
@@ -1054,6 +915,8 @@ export default function enfant({ navigation }) {
                     </View>
 
                     {showDatePicker && (
+
+                      
                       <DatePicker
                         style={{ width: "100%", color: "black" }}
                         value={date}
@@ -1069,6 +932,7 @@ export default function enfant({ navigation }) {
                     )}
 
                     {showTimePicker && (
+                      
                       <DatePicker
                         style={{ width: "100%", color: "black" }}
                         value={date}
@@ -1081,7 +945,7 @@ export default function enfant({ navigation }) {
                                 hour: "2-digit",
                                 minute: "2-digit",
                               });
-                            setHeure(selectedTime); // Mettre à jour l'état `heure` avec la nouvelle heure
+                            setHeure(selectedTime); // Mettr e anouvlle heure
                           }
                           setShowTimePicker(false);
                         }}
@@ -1205,13 +1069,12 @@ const styles = StyleSheet.create({
   uploadBtnContainer: {
     height: 120,
     width: 120,
-    borderRadius: 125 / 2,
-    justifyContent: "center",
-    alignItems: "center",
+    borderRadius: 125 / 5,
+ marginRight:50,
 
     borderWidth: 0,
     overflow: "hidden",
-    marginTop: 60,
+    marginTop: 50,
   },
 
   label: {

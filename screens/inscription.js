@@ -81,7 +81,7 @@ const InscriC = ({ navigation }) => {
         console.log("ffffffffff" + response.assets[0].uri);
         setAvatar(response.assets[0].uri);
         FilesSystem.uploadAsync(
-          "http://192.168.43.116:5000/api/utlisateur/upload-image",
+          "http://192.168.43.105:5000/api/utlisateur/upload-image",
           response.assets[0].uri,
           {
             fieldName: "avatar",
@@ -101,6 +101,8 @@ const InscriC = ({ navigation }) => {
       !prenom ||
       !Num_tel ||
       Num_tel < 0 ||
+      age<15 ||
+      nbr_enfants>6 ||
       password.length < 6 ||
       Num_tel.length != 8 ||
       (!regEx.test(email) && email != "")
@@ -121,7 +123,7 @@ const InscriC = ({ navigation }) => {
       formData.append("nbr_enfants", nbr_enfants);
       formData.append("avatar", avatarFile);
       const response = await fetch(
-        "http://192.168.43.116:5000/api/utlisateur/add-user",
+        "http://192.168.43.105:5000/api/utlisateur/add-user",
         {
           method: "POST",
           headers: {
@@ -170,7 +172,7 @@ const InscriC = ({ navigation }) => {
     };
 
     axios
-      .post("http://192.168.43.116:5000/api/utlisateur/add-user", data)
+      .post("http://192.168.43.105:5000/api/utlisateur/add-user", data)
       .then(({ data }) => {
         if (data) {
           if (data.email != "" && data.password != "") {
@@ -203,6 +205,7 @@ const InscriC = ({ navigation }) => {
                 marginTop: 100,
                 marginLeft: 15,
                 marginRight: 15,
+                borderRadius:40
               },
             ]}
           >
@@ -345,12 +348,7 @@ const InscriC = ({ navigation }) => {
                 onChangeText={(val) => setNumero(val)}
               />
             </View>
-            {error && !Num_tel && (
-              <Text style={{ color: "red", fontSize: 10, fontWeight: "bold" }}>
-                {" "}
-                champ obligatoire *
-              </Text>
-            )}
+            
             {error && Num_tel.length != 8 && (
               <Text style={{ color: "red", fontSize: 10, fontWeight: "bold" }}>
                 Numéro du téléphone doit contenir 8 chiffres
@@ -399,7 +397,12 @@ const InscriC = ({ navigation }) => {
                 onChangeText={(val) => setAge(val)}
               />
             </View>
-
+           
+             {error && age && age < 15  && (
+  <Text style={{ color: "red", fontSize: 10, fontWeight: "bold" }}>
+    Age doit être supérieur à 15 *
+  </Text>
+)}
             <Text
               style={[
                 styles.text_footer,
@@ -437,6 +440,11 @@ const InscriC = ({ navigation }) => {
                 onChangeText={(val) => setNombreEnf(val)}
               />
             </View>
+            {error && nbr_enfants && nbr_enfants >= 5  &&(
+  <Text style={{ color: "red", fontSize: 10, fontWeight: "bold" }}>
+    Nombre d'enfants doit être inférieur à 5 *
+  </Text>
+)}
 
             <Text
               style={[
@@ -603,6 +611,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#0147A6",
+    
   },
   footer: {
     flex: 3,

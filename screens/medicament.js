@@ -7,6 +7,7 @@ import {
   Text,
   TouchableOpacity,
   TextInput,
+
   View,
   ScrollView,
   Dimensions,
@@ -35,7 +36,7 @@ import { Button } from "react-native-paper";
 export default function Medicaments({ navigation }) {
   const [currentTab, setCurrentTab] = useState("Home");
 
-  const [showPopup, setShowPopup] = useState(false); // Déplacer showPopup à l'intérieur de la fonction composant
+  const [showPopup, setShowPopup] = useState(false); // Déplacer showPopup ntérieur de la fonction composant
   const [isButtonVisible, setIsButtonVisible] = useState(true); // État pour gérer la visibilité du bouton
 
   const [showMenu, setShowMenu] = useState(false);

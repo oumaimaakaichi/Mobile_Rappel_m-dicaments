@@ -1,17 +1,20 @@
 import { StatusBar } from "expo-status-bar";
-import { StyleSheet } from "react-native";
+import { StyleSheet, Button, Text, View, Platform } from "react-native";
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import React, { useState, useEffect, useCallback } from "react";
+import * as Notifications from "expo-notifications";
+import * as Permissions from "expo-permissions";
+import axios from "axios";
+import { getClientData } from "./utils/AsyncStorageClient";
+
+// Ss=
+import Logo from "./Logo";
 import LoginC from "./screens/login";
-import React from "react";
 import Login from "./screens/log";
 import WelcomeScreen from "./screens/welcome";
-
 import Dashboard from "./screens/dashboars";
 import Profile from "./screens/profil";
-const Stack = createNativeStackNavigator();
-
-import Logo from "./Logo";
 import Medicament from "./screens/rendez";
 import AllRendez_vous from "./screens/allRendez-vous";
 import DetailleRendezvous from "./screens/detailleRendez-vous";
@@ -23,14 +26,6 @@ import OneContact from "./screens/OneContact";
 import UpdateContact from "./screens/updateContact";
 import Profiil from "./screens/updateContact";
 import InscriC from "./screens/inscription";
-import * as Device from "expo-device";
-import * as Notifications from "expo-notifications";
-/*import PushNotification from "react-native-push-notification";
-import registerNNPushToken from "native-notify";*/
-import { Button, Text, View } from "react-native";
-import * as Permissions from "expo-permissions";
-import { useState, useEffect } from "react";
-import { Platform } from "react-native";
 import Document from "./screens/document";
 import AddDocPDF from "./screens/AddDocPdf";
 import AddDoc from "./screens/AddDoc";
@@ -43,6 +38,9 @@ import enfant from "./screens/enfant";
 import AllVacination from "./screens/allVacination";
 import DetailleVacination from "./screens/detailleVacination";
 import ModifierVacination from "./screens/modifierVacination";
+
+const Stack = createNativeStackNavigator();
+
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
     shouldShowAlert: true,
@@ -53,9 +51,55 @@ Notifications.setNotificationHandler({
 
 export default function App() {
   const [expoPushToken, setExpoPushToken] = useState("");
+  const [data, setData] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  async function registerForPushNotificationsAsync() {
+    let token;
+    if (Platform.OS === "android") {
+      await Notifications.setNotificationChannelAsync("default", {
+        name: "default",
+        importance: Notifications.AndroidImportance.MAX,
+        vibrationPattern: [0, 250, 250, 250],
+        lightColor: "#FF231F7C",
+        sound: "default",
+      });
+    }
+
+    if (Platform.OS === "ios") {
+      await Notifications.setNotificationChannelAsync("default", {
+        name: "default",
+        importance: Notifications.AndroidImportance.MAX,
+        vibrationPattern: [0, 250, 250, 250],
+        sound: "default",
+      });
+
+      const { status } = await Permissions.askAsync(Permissions.NOTIFICATIONS);
+      if (status !== "granted") {
+        alert("Failed to get permission for push notifications!");
+        return;
+      }
+    }
+
+    token = (await Notifications.getExpoPushTokenAsync()).data;
+    console.log(token);
+
+    return token;
+  }
+
+  const getNotificationPermission = async () => {
+    const { status: existingStatus } = await Permissions.getAsync(
+      Permissions.NOTIFICATIONS
+    );
+    let finalStatus = existingStatus;
+    if (existingStatus !== "granted") {
+      const { status } = await Permissions.askAsync(Permissions.NOTIFICATIONS);
+      finalStatus = status;
+    }
+    return finalStatus === "granted";
+  };
 
   useEffect(() => {
-    console.log("Registering for push notifications...");
     registerForPushNotificationsAsync()
       .then((token) => {
         console.log("token: ", token);
@@ -64,71 +108,205 @@ export default function App() {
       .catch((err) => console.log(err));
   }, []);
 
-  async function registerForPushNotificationsAsync() {
-    let token;
+  useEffect(() => {
+    fetchData();
+    fetchDataa();
+    fetchDataaa();
+    getNotificationPermission();
 
-    if (Platform.OS === "android") {
-      await Notifications.setNotificationChannelAsync("default", {
-        name: "default",
-        importance: Notifications.AndroidImportance.MAX,
-        vibrationPattern: [0, 250, 250, 250],
-        lightColor: "#FF231F7C",
-      });
+    const intervalId = setInterval(() => {
+      fetchDataa();
+      fetchDataaa();
+    }, 60000); // Every 60 seconds
+
+    return () => clearInterval(intervalId);
+  }, []);
+
+  const fetchData = async () => {
+    try {
+      const clientData = await getClientData();
+      setIsLoading(true);
+      const response = await axios.get(
+        `http://192.168.1.14:5000/api/vacination/vaccinationGet/${clientData?.Data?._id}`
+      );
+      setData(response.data);
+      setIsLoading(false);
+      scheduleNotifications(response.data);
+    } catch (error) {
+      console.error("Error fetching rendez-vous data: ", error);
+      setIsLoading(false);
     }
+  };
 
-    if (Device.isDevice) {
-      const { status: existingStatus } =
-        await Notifications.getPermissionsAsync();
-      let finalStatus = existingStatus;
-      if (existingStatus !== "granted") {
-        const { status } = await Notifications.requestPermissionsAsync();
-        finalStatus = status;
-      }
-      if (finalStatus !== "granted") {
-        alert("Failed to get push token for push notification!");
-        return;
-      }
-      // Learn more about projectId:
-      // https://docs.expo.dev/push-notifications/push-notifications-setup/#configure-projectid
-      token = (
-        await Notifications.getExpoPushTokenAsync({
-          projectId: "2cabd58e-13b7-4adc-bcd2-ea8675f091ce",
-        })
-      ).data;
-      console.log(token);
-    } else {
-      alert("Must use physical device for Push Notifications");
+  const fetchDataa = async () => {
+    try {
+      const clientData = await getClientData();
+      setIsLoading(true);
+      const response = await axios.get(
+        `http://192.168.1.14:5000/api/rendezVous/rendezVous/${clientData?.Data?._id}`
+      );
+      setData(response.data);
+      console.log("Data: " + response.data);
+      setIsLoading(false);
+      scheduleNotificationsss(response.data);
+    } catch (error) {
+      console.error("Error fetching rendez-vous data: ", error);
+      setIsLoading(false);
     }
+  };
 
-    return token;
-  }
+  const fetchDataaa = async () => {
+    try {
+      const clientData = await getClientData();
+      setIsLoading(true);
+      const response = await axios.get(
+        `http://192.168.1.14:5000/medUtilisateur/${clientData?.Data?._id}`
+      );
+      setData(response.data);
+      console.log(response.data);
+      setIsLoading(false);
+      scheduleNotificationsM(response.data);
+    } catch (error) {
+      console.error("Error fetching rendez-vous data: ", error);
+      setIsLoading(false);
+    }
+  };
 
-  const sendNotification = async () => {
-    console.log("Sending push notification...");
+  const scheduleNotifications = async (vaccinations) => {
+    vaccinations.forEach(async (item) => {
+      const vaccinationTimeParts = item.heure.split(":");
+      const vaccinationDate = new Date(item.date);
+      vaccinationDate.setHours(parseInt(vaccinationTimeParts[0], 10));
+      vaccinationDate.setMinutes(parseInt(vaccinationTimeParts[1], 10));
 
-    // notification message
-    const message = {
-      to: expoPushToken,
-      sound: "default",
-      title: "My first push notification!",
-      body: "This is my first push notification made with expo rn app",
-    };
+      const notificationDate = new Date(
+        vaccinationDate.getTime() - 2 * 60 * 60 * 1000 // 2 hours before
+      );
 
-    await fetch("https://exp.host/--/api/v2/push/send", {
-      method: "POST",
-      headers: {
-        host: "exp.host",
-        accept: "application/json",
-        "accept-encoding": "gzip, deflate",
-        "content-type": "application/json",
-      },
-      body: JSON.stringify(message),
+      if (notificationDate > new Date()) {
+        await Notifications.scheduleNotificationAsync({
+          content: {
+            title: "Rappel de vaccination",
+            body: `Vous avez un rendez-vous de vaccination à ${item.heure} dans ${item.lieu}`,
+            data: { item },
+            sound: "default", // Set sound
+          },
+          trigger: { date: notificationDate },
+        });
+      }
+    });
+  };
+
+  const scheduleNotificationsss = async (rendezvous) => {
+    console.log("Rendezvous: " + rendezvous);
+    rendezvous.forEach(async (item) => {
+      const rendezvousTimeParts = item.heure.split(":");
+      const rendezvousDate = new Date(item.date);
+      rendezvousDate.setHours(parseInt(rendezvousTimeParts[0], 10));
+      rendezvousDate.setMinutes(parseInt(rendezvousTimeParts[1], 10));
+
+      const notificationDate = new Date(
+        rendezvousDate.getTime() - 2 * 60 * 60 * 1000 // 2 hours before
+      );
+
+      if (notificationDate > new Date()) {
+        await Notifications.scheduleNotificationAsync({
+          content: {
+            title: "Rappel de rendez-vous",
+            body: `Vous avez un rendez-vous à ${item.heure} dans ${item.lieu}`,
+            data: { item },
+            sound: "default", // Set sound
+          },
+          trigger: { date: notificationDate },
+        });
+      }
+    });
+  };
+
+  const scheduleNotificationsM = async (medicaments) => {
+    medicaments.forEach(async (med) => {
+      if (med.prendre) {
+        const { Matin, demi_journe, nuit } = med;
+
+        if (Matin.matin) {
+          const hoursMinutes = Matin.DatePrise.split(":");
+          const now = new Date();
+          const notificationTime = new Date(
+            now.getFullYear(),
+            now.getMonth(),
+            now.getDate(),
+            parseInt(hoursMinutes[0]),
+            parseInt(hoursMinutes[1]),
+            0
+          );
+          await Notifications.scheduleNotificationAsync({
+            content: {
+              title: "Rappel de médicament",
+              body: `C'est l'heure de prendre le médicament: ${med.nom_medicament} (Matin)`,
+              sound: "default", // Set sound
+            },
+            trigger: {
+              hour: notificationTime.getHours(),
+              minute: notificationTime.getMinutes(),
+              repeats: true,
+            },
+          });
+        }
+
+        if (demi_journe.demi_journe) {
+          const hoursMinutes = demi_journe.DatePrise.split(":");
+          const now = new Date();
+          const notificationTime = new Date(
+            now.getFullYear(),
+            now.getMonth(),
+            now.getDate(),
+            parseInt(hoursMinutes[0]),
+            parseInt(hoursMinutes[1]),
+            0
+          );
+          await Notifications.scheduleNotificationAsync({
+            content: {
+              title: "Rappel de médicament",
+              body: `C'est l'heure de prendre le médicament: ${med.nom_medicament} (Demi-journée)`,
+              sound: "default", // Set sound
+            },
+            trigger: {
+              hour: notificationTime.getHours(),
+              minute: notificationTime.getMinutes(),
+              repeats: true,
+            },
+          });
+        }
+
+        if (nuit.nuit) {
+          const hoursMinutes = nuit.DatePrise.split(":");
+          const now = new Date();
+          const notificationTime = new Date(
+            now.getFullYear(),
+            now.getMonth(),
+            now.getDate(),
+            parseInt(hoursMinutes[0]),
+            parseInt(hoursMinutes[1]),
+            0
+          );
+          await Notifications.scheduleNotificationAsync({
+            content: {
+              title: "Rappel de médicament",
+              body: `C'est l'heure de prendre le médicament: ${med.nom_medicament} (Nuit)`,
+              sound: "default", // Set sound
+            },
+            trigger: {
+              hour: notificationTime.getHours(),
+              minute: notificationTime.getMinutes(),
+              repeats: true,
+            },
+          });
+        }
+      }
     });
   };
 
   return (
-    // Dans la méthode pour planifier la notification
-
     <NavigationContainer>
       <Stack.Navigator
         initialRouteName="Logo"
@@ -172,18 +350,5 @@ export default function App() {
         />
       </Stack.Navigator>
     </NavigationContainer>
-    // <View style={{ marginTop: 100, alignItems: "center" }}>
-    //<Text style={{ marginVertical: 30 }}>Expo RN Push Notifications</Text>
-    //<Button title="Send push notification" onPress={sendNotification} />
-    // </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#fff",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-});

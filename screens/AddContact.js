@@ -14,13 +14,13 @@ import {
 import profile from "../assets/prof.png";
 import { getClientData } from "../utils/AsyncStorageClient";
 import { LinearGradient } from "expo-linear-gradient";
-// Tab ICons...
+
 import home from "../assets/home.png";
 import Hor from "../assets/hr.png";
 import logout from "../assets/logout.png";
 import { AntDesign } from "@expo/vector-icons";
 const { width: WIDTH } = Dimensions.get("window");
-// Menu
+
 import Contact from "../assets/b.png";
 import conta from "../assets/contact.png";
 import menu from "../assets/menu.png";
@@ -35,6 +35,7 @@ import medicament from "../assets/med.png";
 import { useIsFocused } from "@react-navigation/native";
 import historique from "../assets/histo.png";
 import { Button } from "react-native-paper";
+import Toast from "react-native-toast-message";
 export default function AddContactt({ navigation }) {
   const [currentTab, setCurrentTab] = useState("Home");
 
@@ -56,10 +57,19 @@ export default function AddContactt({ navigation }) {
   const [spécialite, setSpecialité] = useState("");
   const [error, setError] = useState(false);
   const regEx = /[a-zA-Z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,8}(.[a-z{2,8}])?/g;
-  useEffect(async () => {
-    const data = await getClientData();
-    setUser(data);
-    console.log("ddddddd" + data._id);
+  useEffect(() => {
+  
+
+    const fetchUserData = async () => {
+      const userData = await getClientData();
+     
+        setUser(userData);
+      
+    };
+
+    fetchUserData();
+
+   
   }, []);
   const addContact = async () => {
     const data = await getClientData();
@@ -77,7 +87,7 @@ export default function AddContactt({ navigation }) {
       return false;
     }
     try {
-      // Construire l corps de la requête avec les données du contact
+    
       const requestBody = JSON.stringify({
         nom_docteur: nom,
         Prenom_docteur: prenom,
@@ -89,7 +99,7 @@ export default function AddContactt({ navigation }) {
       });
 
       const response = await fetch(
-        "http://192.168.43.116:5000/api/AddContact",
+        "http://192.168.43.105:5000/api/AddContact",
         {
           method: "POST",
           headers: {
@@ -100,15 +110,26 @@ export default function AddContactt({ navigation }) {
       );
 
       if (response.ok) {
-        setNom("");
-        setPrenom("");
-        setNumero("");
-        setEmail("");
-        setAdresse("");
-        setSpecialité("");
-        navigation.navigate("contact");
+        Toast.show({
+          position: "top",
+          type: "success",
+
+          text1: "Ajouter un Contact",
+          text2: "Contact ajouté avec succès",
+          
+
+          autoHide: true,
+          visibilityTime: 3000,
+          autoHide: true,
+          onHide: () => {
+            navigation.navigate("contact");
+          },
+          onShow: () => {},
+        });
+
       } else {
-        console.error("Échec de l'ajout du condtact.");
+
+        console.error("Échec de l'ajout du médicament");
       }
     } catch (error) {
       console.error("Erreur lors de l'ajout du contact:", error);
@@ -119,30 +140,33 @@ export default function AddContactt({ navigation }) {
     <>
       <SafeAreaView style={styles.container}>
         <ScrollView style={styles.s}>
+      
           <View
             style={{
               justifyContent: "flex-start",
-              padding: 15,
+              padding: 14,
               alignItems: "center",
-              marginBottom: 20,
+              marginBottom: 21,
+              marginTop:60
             }}
           >
-            <TouchableOpacity style={styles.uploadBtnContainer}>
+           <TouchableOpacity style={styles.uploadBtnContainer}>
               <Image
-                source={{ uri: user?.avatar }}
+                source={{ uri: user?.Data?.avatar }}
                 style={{ width: "100%", height: "100%" }}
               />
             </TouchableOpacity>
 
             <Text
               style={{
-                fontSize: 21,
+                fontSize: 22,
                 fontWeight: "bold",
                 color: "whitesmoke",
-                marginTop: 11,
+                marginTop: 20,
+                marginRight: 70,
               }}
             >
-              {user.nom} {user.prenom}
+              {user?.Data?.nom} {user?.Data?.prenom}
             </Text>
 
             <View style={{ flexGrow: 1 }}>
@@ -233,7 +257,7 @@ export default function AddContactt({ navigation }) {
 
                 <TouchableOpacity
                   onPress={() => {
-                    navigation.navigate("doc");
+                    navigation.navigate("docc");
                   }}
                 >
                   <View
@@ -289,8 +313,8 @@ export default function AddContactt({ navigation }) {
                     <Image
                       source={Contact}
                       style={{
-                        width: 50,
-                        height: 50,
+                        width: 25,
+                        height: 25,
                         tintColor: "#rgb(97, 172, 243)",
                       }}
                     ></Image>
@@ -318,7 +342,7 @@ export default function AddContactt({ navigation }) {
                       alignItems: "center",
                       paddingVertical: 8,
                       backgroundColor: "transparent",
-                      paddingLeft: 13,
+                      paddingLeft: 7,
                       paddingRight: 35,
 
                       borderRadius: 8,
@@ -328,8 +352,8 @@ export default function AddContactt({ navigation }) {
                     <Image
                       source={cland}
                       style={{
-                        width: 25,
-                        height: 25,
+                        width: 40,
+                        height: 40,
                         tintColor: "#fff",
                       }}
                     ></Image>
@@ -338,7 +362,7 @@ export default function AddContactt({ navigation }) {
                       style={{
                         fontSize: 15,
                         fontWeight: "bold",
-
+marginLeft:8,
                         color: "white",
                       }}
                     >
@@ -376,7 +400,7 @@ export default function AddContactt({ navigation }) {
                       style={{
                         fontSize: 15,
                         fontWeight: "bold",
-
+                        marginLeft:10,
                         color: "white",
                       }}
                     >
@@ -501,7 +525,7 @@ export default function AddContactt({ navigation }) {
                 </TouchableOpacity>
                 <TouchableOpacity
                   onPress={() => {
-                    navigation.navigate("signin");
+                    navigation.navigate("LoginC");
                   }}
                 >
                   <View
@@ -554,7 +578,7 @@ export default function AddContactt({ navigation }) {
             paddingHorizontal: 15,
             paddingVertical: 20,
             borderRadius: showMenu ? 15 : 0,
-            // Transforming View...
+        
             transform: [{ scale: scaleValue }, { translateX: offsetValue }],
           }}
         >
@@ -608,6 +632,7 @@ export default function AddContactt({ navigation }) {
               </TouchableOpacity>
 
               <ScrollView horizontal={true}>
+              <Toast />
                 <View style={styles.popupContainer}>
                   <Image
                     source={conta}
@@ -687,14 +712,14 @@ export default function AddContactt({ navigation }) {
                     <Text
                       style={{ color: "red", fontSize: 10, fontWeight: "bold" }}
                     >
-                      Numéro du téléphone doit etre positive
+                     
                     </Text>
                   )}
                   {error && Num_tel.length != 8 && (
                     <Text
                       style={{ color: "red", fontSize: 10, fontWeight: "bold" }}
                     >
-                      Numéro du téléphone doit etre positive
+                      Le numéro de téléphone doit être composé de 8 chiffres
                     </Text>
                   )}
 
@@ -789,7 +814,7 @@ export default function AddContactt({ navigation }) {
                   </View>
                 </View>
 
-                {/* Votre bouton "Ajouter un contact" */}
+             
               </ScrollView>
             </Animated.View>
           </ScrollView>
@@ -797,7 +822,7 @@ export default function AddContactt({ navigation }) {
       </SafeAreaView>
     </>
   );
-}
+} 
 
 const styles = StyleSheet.create({
   container: {
@@ -821,12 +846,11 @@ const styles = StyleSheet.create({
     height: 120,
     width: 120,
     borderRadius: 125 / 5,
-    justifyContent: "center",
-    alignItems: "center",
+ marginRight:40,
 
     borderWidth: 0,
     overflow: "hidden",
-    marginTop: 20,
+    marginTop: 50,
   },
 
   signIn: {
@@ -837,7 +861,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     borderRadius: 8,
     marginBottom: 30,
-    marginTop: -50, // Supprimer les guillemets autour du nombre négatif
+    marginTop: -50, 
   },
   textSign: {
     fontSize: 18,
@@ -858,13 +882,13 @@ const styles = StyleSheet.create({
     padding: 10,
     marginLeft: 20,
     borderRadius: 10,
-    elevation: 5, // Pour l'ombre sur Android
-    shadowColor: "#000", // Pour l'ombre sur iOS
-    shadowOffset: { width: 0, height: 2 }, // Pour l'ombre sur iOS
-    shadowOpacity: 0.25, // Pour l'ombre sur iOS
+    elevation: 5, 
+    shadowColor: "#000", 
+    shadowOffset: { width: 0, height: 2 }, 
+    shadowOpacity: 0.25, 
     shadowRadius: 3.84,
     alignItems: "center",
-    width: "90%", // Utilisez un pourcentage de la largeur de l'écran
+    width: "90%", 
     marginTop: "30%",
     alignSelf: "center",
     // Pour l'ombre sur iOS
@@ -872,22 +896,22 @@ const styles = StyleSheet.create({
   inputContainer: {
     flexDirection: "row",
     alignItems: "center",
-    borderWidth: 0.6, // Ajoutez d'autres styles de bordure selon vos besoins
-    borderColor: "#01BACF", // Couleur de la bordure
-    borderRadius: 5, // Bordure arrondie
-    paddingHorizontal: 10, // Marge horizontale interne
+    borderWidth: 0.6, 
+    borderColor: "#01BACF",
+    borderRadius: 5, 
+    paddingHorizontal: 10, 
     marginTop: 20,
-    height: 50, // Espacement vers le haut
+    height: 50, 
   },
 
   icon: {
     marginRight: 11,
     color: "#01BACF",
-    // Espacement à droite de l'icône
+   
   },
   input: {
-    flex: 1, // Pour que le TextInput prenne tout l'espace restant
-    height: 70, // Hauteur du TextInput
+    flex: 1, 
+    height: 70, 
     marginLeft: 10,
     borderWidth: 0,
     borderColor: "rgb(70, 143, 183)",

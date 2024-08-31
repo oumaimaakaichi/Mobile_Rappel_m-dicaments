@@ -22,19 +22,22 @@ import { AntDesign } from "@expo/vector-icons";
 const { width: WIDTH } = Dimensions.get("window");
 // Menu
 import DateTimePickerModal from "react-native-modal-datetime-picker";
-
+import Toast from "react-native-toast-message";
 import { RadioButton } from "react-native-paper";
 import { faClock } from "@fortawesome/free-solid-svg-icons";
 import Contact from "../assets/b.png";
-import asma2 from "../assets/asma2.png";
+import asma2 from "../assets/lmmm-removebg-preview.png";
 import menu from "../assets/menu.png";
 import close from "../assets/close.png";
 import document from "../assets/doc.png";
 import p from "../assets/cjt.png";
 import medicament from "../assets/med.png";
+import enfant1 from "../assets/enfant.png";
 import { useIsFocused } from "@react-navigation/native";
 import historique from "../assets/histo.png";
 import { Button } from "react-native-paper";
+import list from "../assets/hihi.png";
+import cland from "../assets/clandr.png";
 export default function AddMedicament({ navigation }) {
   const [currentTab, setCurrentTab] = useState("Home");
 
@@ -132,6 +135,19 @@ export default function AddMedicament({ navigation }) {
   };
 
   const addMedicament = async () => {
+
+    if (
+      !nom 
+      
+    ) {
+      setError(true);
+      return false;
+    }
+
+
+
+
+
     try {
       const requestBody = JSON.stringify({
         nom_medicament: nom,
@@ -151,7 +167,7 @@ export default function AddMedicament({ navigation }) {
       });
 
       const response = await fetch(
-        "http://192.168.43.116:5000/api/AddMedicament",
+        "http://192.168.43.105:5000/api/AddMedicament",
         {
           method: "POST",
           headers: {
@@ -162,9 +178,22 @@ export default function AddMedicament({ navigation }) {
       );
 
       if (response.ok) {
-        // Le médicament a été ajouté avec succès
-        // Réinitialisez les états si nécessaire
-        console.log("Médicament ajouté avec succès");
+        Toast.show({
+          position: "top",
+          type: "success",
+
+          text1: "Ajouter un Médicament",
+          text2: "Médicament ajouté avec succès",
+          
+
+          autoHide: true,
+          visibilityTime: 8000,
+          autoHide: true,
+          onHide: () => {
+            navigation.navigate("Allmedicament");
+          },
+          onShow: () => {},
+        });
         // Vous pouvez également naviguer vers une autre vue ou effectuer d'autres actions nécessaires ici
       } else {
         // Il y a eu une erreur lors de l'ajout du médicament
@@ -176,23 +205,24 @@ export default function AddMedicament({ navigation }) {
     }
   };
 
-  // Appelez la fonction addMedicament lorsque vous appuyez sur le bouton Ajouter
+
 
   return (
     <>
       <SafeAreaView style={styles.container}>
         <ScrollView style={styles.s}>
-          <View
+        <View
             style={{
               justifyContent: "flex-start",
               padding: 15,
               alignItems: "center",
-              marginBottom: 20,
+              marginBottom: 21,
+              marginTop:120
             }}
           >
             <TouchableOpacity style={styles.uploadBtnContainer}>
-              <Image
-                source={{ uri: user?.avatar }}
+            <Image
+                source={{ uri: user?.Data?.avatar }}
                 style={{ width: "100%", height: "100%" }}
               />
             </TouchableOpacity>
@@ -296,7 +326,7 @@ export default function AddMedicament({ navigation }) {
 
                 <TouchableOpacity
                   onPress={() => {
-                    navigation.navigate("doc");
+                    navigation.navigate("docc");
                   }}
                 >
                   <View
@@ -372,6 +402,87 @@ export default function AddMedicament({ navigation }) {
                 </TouchableOpacity>
                 <TouchableOpacity
                   onPress={() => {
+                    navigation.navigate("Medicament", { user: user });
+                  }}
+                >
+                  <View
+                    style={{
+                      flexDirection: "row",
+                      alignItems: "center",
+                      paddingVertical: 8,
+                      backgroundColor: "transparent",
+                      paddingLeft: 13,
+                      paddingRight: 35,
+                      borderRadius: 8,
+                      marginTop: 20,
+                    }}
+                  >
+                    <Image
+                      source={cland}
+                      style={{
+                        width: 45,
+                        height: 45,
+                        tintColor: "white",
+
+                        marginLeft: -10,
+                      }}
+                    ></Image>
+
+                    <Text
+                      style={{
+                        fontSize: 15,
+                        fontWeight: "bold",
+
+                        color: "white",
+                      }}
+                    >
+                      Ajouter rendez-vous{" "}
+                    </Text>
+                  </View>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  onPress={() => {
+                    navigation.navigate("AllRendez_vous");
+                  }}
+                >
+                  <View
+                    style={{
+                      flexDirection: "row",
+                      alignItems: "center",
+                      paddingVertical: 8,
+                      backgroundColor: "transparent",
+                      paddingLeft: 13,
+                      paddingRight: 35,
+
+                      borderRadius: 8,
+                      marginTop: 10,
+                    }}
+                  >
+                    <Image
+                      source={list}
+                      style={{
+                        width: 55,
+                        height: 55,
+                        tintColor: "white",
+                        marginLeft: -20,
+                      }}
+                    ></Image>
+
+                    <Text
+                      style={{
+                        fontSize: 15,
+                        fontWeight: "bold",
+
+                        color: "white",
+                      }}
+                    >
+                      Rendez-vous{" "}
+                    </Text>
+                  </View>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={() => {
                     navigation.navigate("Medi");
                   }}
                 >
@@ -410,6 +521,44 @@ export default function AddMedicament({ navigation }) {
                 </TouchableOpacity>
                 <TouchableOpacity
                   onPress={() => {
+                    navigation.navigate("enfant");
+                  }}
+                >
+                  <View
+                    style={{
+                      flexDirection: "row",
+                      alignItems: "center",
+                      paddingVertical: 8,
+                      backgroundColor: "transparent",
+                      paddingLeft: 13,
+                      paddingRight: 35,
+                      borderRadius: 8,
+                      marginTop: 20,
+                    }}
+                  >
+                    <Image
+                      source={enfant1}
+                      style={{
+                        width: 25,
+                        height: 25,
+                        tintColor: "white",
+                      }}
+                    ></Image>
+
+                    <Text
+                      style={{
+                        fontSize: 15,
+                        fontWeight: "bold",
+                        paddingLeft: 15,
+                        color: "white",
+                      }}
+                    >
+                      Espace enfant{" "}
+                    </Text>
+                  </View>
+                </TouchableOpacity>
+                {/* <TouchableOpacity
+                  onPress={() => {
                     navigation.navigate("DashHoraire");
                   }}
                 >
@@ -446,9 +595,49 @@ export default function AddMedicament({ navigation }) {
                     </Text>
                   </View>
                 </TouchableOpacity>
+*/}
+
                 <TouchableOpacity
                   onPress={() => {
-                    navigation.navigate("signin");
+                    navigation.navigate("AllVacination");
+                  }}
+                >
+                  <View
+                    style={{
+                      flexDirection: "row",
+                      alignItems: "center",
+                      paddingVertical: 8,
+                      backgroundColor: "transparent",
+                      paddingLeft: 13,
+                      paddingRight: 35,
+                      borderRadius: 8,
+                      marginTop: 20,
+                    }}
+                  >
+                    <Image
+                      source={enfant1}
+                      style={{
+                        width: 25,
+                        height: 25,
+                        tintColor: "white",
+                      }}
+                    ></Image>
+
+                    <Text
+                      style={{
+                        fontSize: 15,
+                        fontWeight: "bold",
+                        paddingLeft: 15,
+                        color: "white",
+                      }}
+                    >
+                      Tous vacination{" "}
+                    </Text>
+                  </View>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={() => {
+                    navigation.navigate("LoginC");
                   }}
                 >
                   <View
@@ -555,15 +744,17 @@ export default function AddMedicament({ navigation }) {
               </TouchableOpacity>
 
               <ScrollView horizontal={true}>
+                
                 <View style={styles.popupContainer}>
+                <Toast/>
                   <Image
                     source={asma2}
                     style={{
-                      width: 300,
-                      height: 170,
+                      width: 250,
+                      height: 190,
                       alignSelf: "center",
-                      marginTop: 45,
-                      marginBottom: 50,
+                      marginTop: 20,
+                      marginBottom: 10,
                     }}
                   />
                   <View style={styles.inputContainer}>
@@ -580,13 +771,11 @@ export default function AddMedicament({ navigation }) {
                     />
                   </View>
                   {error && !nom && (
-                    <Text
-                      style={{ color: "red", fontSize: 10, fontWeight: "bold" }}
-                    >
-                      {" "}
-                      champ obligatoire *
-                    </Text>
-                  )}
+            <Text style={{ color: 'red', fontSize: 10, fontWeight: 'bold' }}>
+              champ obligatoire *
+            </Text>
+          )}
+
 
                   <View>
                     <View
@@ -809,7 +998,7 @@ const styles = StyleSheet.create({
   popupContainer: {
     backgroundColor: "white",
     padding: 10,
-    marginLeft: 20,
+    marginLeft: 30,
     borderRadius: 10,
     elevation: 5, // Pour l'ombre sur Android
     shadowColor: "#000", // Pour l'ombre sur iOS
@@ -817,10 +1006,12 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25, // Pour l'ombre sur iOS
     shadowRadius: 3.84,
     alignItems: "center",
-    width: "90%", // Utilisez un pourcentage de la largeur de l'écran
-    marginTop: "10%",
+    width: "85%", // Utilisez un pourcentage de la largeur de l'écran
+   
     alignSelf: "center",
     height: "100%",
+    marginBottom:50,
+    marginTop:80
 
     // Pour l'ombre sur iOS
   },

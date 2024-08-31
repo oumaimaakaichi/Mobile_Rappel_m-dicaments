@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect , useCallback } from "react";
 import {
   View,
   Text,
@@ -7,124 +7,124 @@ import {
   FlatList,
   Dimensions,
   TextInput,
+  Image,
 } from "react-native";
 import { getClientData } from "../utils/AsyncStorageClient";
 import { MaterialIcons, AntDesign } from "@expo/vector-icons";
 import Toast from "react-native-toast-message";
+import * as OpenAnything from "react-native-openanything";
+import { useFocusEffect } from '@react-navigation/native';
 const { width: WIDTH } = Dimensions.get("window");
+
 export default function ListDoc({ navigation }) {
   const [data, setData] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
-
-  useEffect(async () => {
-    const userData = await getClientData();
-    console.log("ggggggg" + userData?._id);
-    const response = await fetch(
-      `http://192.168.43.116:5000/docUser/${userData.Data._id}`
-    );
-    const jsonData = await response.json();
-    setData(jsonData);
-    console.log(jsonData);
-  }, []);
+  const [isLoading, setIsLoading] = useState(true);
 
   const fetchData = async () => {
-    const userData = await getClientData();
-    console.log("ee=e" + userData);
-    const response = await fetch(
-      `http://192.168.43.116:5000/docUser/${userData.Data._id}`
-    );
-    const jsonData = await response.json();
-    setData(jsonData);
+    try {
+      const userData = await getClientData();
+      console.log("User ID:", userData?._id);
+      const response = await fetch(
+        `http://192.168.43.105:5000/docUser/${userData?.Data?._id}`
+      );
+      const jsonData = await response.json();
+      setData(jsonData);
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      fetchData();
+    }, [])
+  );
   const deleteContact = async (id) => {
     try {
-      await fetch(`http://192.168.43.116:5000/deleteDoc/${id}`, {
+      await fetch(`http://192.168.43.105:5000/deleteDoc/${id}`, {
         method: "DELETE",
       });
       Toast.show({
         type: "error",
-        text1: "Echec",
-        text2: "Echec de D",
+        text1: "Échec",
+        text2: "Échec de la suppression",
         visibilityTime: 1000,
         position: "top",
       });
       fetchData();
     } catch (error) {
-      console.error("Erreur lors de la suppression du contactt :", error);
+      console.error("Erreur lors de la suppression du contact :", error);
     }
   };
-  const renderItem = ({ item }) => {
-    return (
-      <>
-        <View
-          style={{
-            flex: 1,
-            flexDirection: "row",
-            backgroundColor: "rgb(187, 205, 215);",
-            marginBottom: 11,
-            marginTop: 10,
-            borderRadius: 10,
-            backgroundColor: "#fff",
-            shadowColor: "#000",
-            shadowOffset: {
-              width: 0,
-              height: 11,
-            },
-            shadowOpacity: 0.3,
-            shadowRadius: 20,
-            padding: 10,
-            marginStart: 7,
-            marginEnd: 8,
-          }}
-        >
-          <View style={{ flex: 1, flexDirection: "column", padding: 10 }}>
-            <Text
-              style={{ fontSize: 19, fontWeight: "bold", marginBottom: 10 }}
-            >
-              Document:
-            </Text>
-            <View style={{ flexDirection: "row" }}>
-              <Text style={{ fontWeight: "bold", marginStart: 10 }}>
-                Document:{" "}
-              </Text>
-              <Text style={styles.WrapText}>{item.nom_document} </Text>
-            </View>
-            <View style={{ flexDirection: "row" }}>
-              <TouchableOpacity
-                onPress={() => {
-                  navigation.navigate("oneDoc", {
-                    itemId: item._id,
-                    getDoc: item,
-                    docPDF: item.document,
-                    navigation: navigation,
-                  });
-                }}
-              >
-                <AntDesign
-                  name="eyeo"
-                  size={31}
-                  color="green"
-                  style={{ marginStart: 60, marginRight: 15 }}
-                />
-              </TouchableOpacity>
-              <TouchableOpacity onPress={() => deleteContact(item._id)}>
-                <MaterialIcons name="delete" size={28} color="#D90115" />
-              </TouchableOpacity>
-            </View>
-          </View>
-          <View></View>
-        </View>
 
-        <View
-          style={{
-            height: 1,
-            backgroundColor: "#F0F0F0",
-          }}
-        ></View>
-      </>
-    );
-  };
+  const renderItem = ({ item }) => (
+    <View
+      style={{
+        flex: 1,
+        flexDirection: "row",
+        backgroundColor: "white",
+        marginBottom: 11,
+        marginTop: 10,
+        borderRadius: 10,
+        backgroundColor: "#A0DEFF",
+        shadowColor: "#000",
+        shadowOffset: {
+          width: 0,
+          height: 11,
+        },
+        shadowOpacity: 0.3,
+        shadowRadius: 20,
+        padding: 10,
+        marginStart: 7,
+        marginEnd: 8,
+      }}
+    >
+      <View style={{ flex: 1, flexDirection: "column", padding: 10 }}>
+        <Text style={{ fontSize: 19, fontWeight: "bold", marginBottom: 10 }}>
+          Document:
+        </Text>
+        <View style={{ flexDirection: "row" }}>
+          <Text style={{ fontWeight: "bold", marginStart: 10 }}>Document: </Text>
+          <Text style={styles.WrapText}>{item.nom_document}</Text>
+        </View>
+        <View style={{ flexDirection: "row" }}>
+          <TouchableOpacity
+            onPress={() => {
+              if (item.image) {
+                navigation.navigate("oneDoc", {
+                  itemId: item._id,
+                  getDoc: item,
+                  docPDF: item.document,
+                  navigation: navigation,
+                });
+              } else if (item.document) {
+                OpenAnything.Pdf(item.document);
+              }
+            }}
+          >
+            <Image
+              source={require("../assets/yeux2-removebg-preview.png")}
+              style={{ width: 50, height: 50, marginLeft: 80, marginTop: -10 }}
+            />
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => deleteContact(item._id)}>
+            <Image
+              source={require("../assets/delete.png")}
+              style={{ width: 30, height: 30, marginLeft: 30, tintColor: "#2A629A" }}
+            />
+          </TouchableOpacity>
+        </View>
+      </View>
+      <View></View>
+    </View>
+  );
 
   const filteredData = data
     ? data.filter((item) =>
@@ -133,21 +133,9 @@ export default function ListDoc({ navigation }) {
     : [];
 
   return (
-    <View
-      style={{
-        flex: 1,
-        flexDirection: "column",
-        backgroundColor: "rgb(237, 243, 247)",
-        width: WIDTH - 30,
-      }}
-    >
+    <View style={{ flex: 1, flexDirection: "column", backgroundColor: "white", width: WIDTH - 30 }}>
       <View style={styles.inputContainer}>
-        <AntDesign
-          name="search1"
-          color="rgb(70, 143, 183)"
-          size={20}
-          style={styles.icon}
-        />
+        <Image source={require("../assets/search.png")} style={styles.icon} />
         <TextInput
           style={styles.input}
           onChangeText={(text) => setSearchQuery(text)}
@@ -155,10 +143,9 @@ export default function ListDoc({ navigation }) {
           placeholder="Rechercher"
         />
       </View>
-
       <View style={StyleSheet.container}>
-        {data == null ? (
-          <Text>Loading</Text>
+        {isLoading ? (
+          <Text>Loading...</Text>
         ) : (
           <FlatList
             data={filteredData}
@@ -176,33 +163,33 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "black",
+    backgroundColor: "white",
   },
-
   WrapText: {
     marginStart: 2,
     marginEnd: 0,
     fontSize: 13,
     marginBottom: 15,
   },
-
   inputContainer: {
     flexDirection: "row",
     alignItems: "center",
-    borderWidth: 0.6, // Ajoutez d'autres styles de bordure selon vos besoins
-    borderColor: "black", // Couleur de la bordure
-    borderRadius: 5, // Bordure arrondie
-    paddingHorizontal: 10, // Marge horizontale interne
+    borderWidth: 0.6,
+    borderColor: "black",
+    borderRadius: 5,
+    paddingHorizontal: 10,
     marginTop: 20,
-    height: 50, // Espacement vers le haut
+    height: 50,
+    backgroundColor: "white",
   },
-
   icon: {
-    marginRight: 11, // Espacement à droite de l'icône
+    marginRight: 11,
+    width: 30,
+    height: 30,
   },
   input: {
-    flex: 1, // Pour que le TextInput prenne tout l'espace restant
-    height: 70, // Hauteur du TextInput
+    flex: 1,
+    height: 70,
     marginLeft: 10,
     borderWidth: 0,
     borderColor: "rgb(70, 143, 183)",

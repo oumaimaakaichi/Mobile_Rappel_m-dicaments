@@ -1,46 +1,65 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext, useState, useEffect } from "react";
 import {
-  ScrollView,
   StyleSheet,
-  Image,
-  Keyboard,
-  KeyboardAvoidingView,
   Text,
-  Dimensions,
-  TextInput,
-  TouchableWithoutFeedback,
   View,
+  Image,
+  TextInput,
   TouchableOpacity,
+  Dimensions,
+  SafeAreaView,
+  ScrollView,
 } from "react-native";
-import { LinearGradient } from "expo-linear-gradient";
-import profl from "../assets/asmaaa.png";
-import { getClientData, updateClientData } from "../utils/AsyncStorageClient";
 import { AntDesign } from "@expo/vector-icons";
-const { width: WIDTH } = Dimensions.get("window");
+import { LinearGradient } from "expo-linear-gradient";
+import conta from "../assets/asmaaa.png";
+import { getClientData, updateClientData } from "../utils/AsyncStorageClient";
+import Toast from "react-native-toast-message";
+const { width: WIDTH, height: HEIGHT } = Dimensions.get("window");
 
-export default function Profile({ navigation }) {
-  const [user, setUser] = useState("");
+export default function Profiil({ navigation }) {
+  const [user, setUser] = useState({});
   const [age, setAge] = useState("");
   const [Num_tel, setNumTel] = useState("");
   const [email, setEmail] = useState("");
   const [error, setError] = useState(false);
 
-  const regEx = /[a-zA-Z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,8}(.[a-z{2,8}])?/g;
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const data = await getClientData();
+        setUser(data);
+        setAge(data?.Data?.age || "");
+        setNumTel(data?.Data?.Num_tel || "");
+        setEmail(data?.Data?.email || "");
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  const validateEmail = (email) => {
+    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return re.test(String(email).toLowerCase());
+  };
+
   const editProfile = async () => {
     if (
       !age ||
-      age < 0 ||
       !Num_tel ||
       Num_tel < 0 ||
-      Num_tel.length != 8 ||
-      (!regEx.test(email) && email != "")
+      Num_tel.length !== 8 ||
+      (!validateEmail(email) && email !== "")
     ) {
       setError(true);
       return false;
     }
+
     try {
       const res = await fetch(
-        `http://192.168.43.116:5000/api/utlisateur/modifier/${user?._id}`,
+        `http://192.168.43.105:5000/api/utlisateur/modifier/${user?.Data?._id}`,
         {
           method: "PUT",
           headers: {
@@ -55,40 +74,52 @@ export default function Profile({ navigation }) {
       );
 
       const data = await res.json();
+     
+        Toast.show({
+          position: "top",
+          type: "success",
+
+          text1: "Profil",
+          text2: "Mise à jours avec succès",
+
+          autoHide: true,
+          visibilityTime: 4000,
+          autoHide: true,
+          onHide: () => {
+            navigation.navigate("dash");
+          },
+          onShow: () => {},
+        });
+      
       console.log(data);
 
-      const newUser = { ...user, age, Num_tel, email };
+      const newUser = { ...user, Data: { ...user.Data, age, Num_tel, email } };
       await updateClientData(newUser);
-      alert("succèss");
+      console.log("succès");
     } catch (error) {
       console.log("erreur", error);
     }
   };
 
-  useEffect(async () => {
-    const data = await getClientData();
-    setUser(data);
-    setAge(data?.age);
-    setNumTel(data?.Num_tel);
-    setEmail(data?.email);
-
-    fetchData();
-  }, []);
-
-  const validateEmail = (email) => {
-    const regex = /[a-zA-Z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,8}(.[a-z{2,8}])?/g;
-    return regex.test(email);
-  };
-
   return (
-    <View style={{ backgroundColor: "#FFFFFF" }}>
+    <SafeAreaView style={{ height: HEIGHT  , backgroundColor:"#0147A6"}}>
       <ScrollView>
+      
+      <TouchableOpacity onPress={() => navigation.goBack()}>
+        <Image
+                  source={require('../assets/back.png')}
+                  style={{width:40 , height:40 , marginTop:20 , tintColor:"white"}}
+                />
+        </TouchableOpacity>
+        <Toast/>
         <View style={styles.popupContainer}>
+
+     
           <Image
-            source={profl}
+            source={conta}
             style={{
-              width: 250,
-              height: 140,
+              width: 190,
+              height: 220,
               alignSelf: "center",
               marginTop: 5,
             }}
@@ -103,27 +134,11 @@ export default function Profile({ navigation }) {
             <TextInput
               placeholder="Numéro de téléphone"
               style={styles.input}
+              value={Num_tel}
               defaultValue={Num_tel}
               onChangeText={(val) => setNumTel(val)}
             />
           </View>
-          {error && !Num_tel && (
-            <Text style={{ color: "red", fontSize: 10, fontWeight: "bold" }}>
-              {" "}
-              champ obligatoire *
-            </Text>
-          )}
-          {error && Num_tel < 0 && (
-            <Text style={{ color: "red", fontSize: 10, fontWeight: "bold" }}>
-              Numéro du téléphone doit etre positive
-            </Text>
-          )}
-          {error && Num_tel.length != 8 && (
-            <Text style={{ color: "red", fontSize: 10, fontWeight: "bold" }}>
-              Numéro du téléphone doit etre positive
-            </Text>
-          )}
-
           <View style={styles.inputContainer}>
             <AntDesign
               name="mail"
@@ -132,24 +147,12 @@ export default function Profile({ navigation }) {
               style={styles.icon}
             />
             <TextInput
-              placeholder="Email "
+              placeholder="Email Docteur"
               style={styles.input}
-              defaultValue={email}
+              value={email}
               onChangeText={(val) => setEmail(val)}
             />
           </View>
-          {error && !email && (
-            <Text style={{ color: "red", fontSize: 10, fontWeight: "bold" }}>
-              {" "}
-              champ obligatoire *
-            </Text>
-          )}
-          {error && !regEx.test(email) && (
-            <Text style={{ color: "red", fontSize: 10, fontWeight: "bold" }}>
-              {" "}
-              email invalide
-            </Text>
-          )}
 
           <View style={styles.inputContainer}>
             <AntDesign
@@ -161,21 +164,21 @@ export default function Profile({ navigation }) {
             <TextInput
               placeholder="Age"
               style={styles.input}
-              defaultValue={age}
+              value={age}
               onChangeText={(val) => setAge(val)}
             />
           </View>
-          {error && !age && (
-            <Text style={{ color: "red", fontSize: 10, fontWeight: "bold" }}>
-              {" "}
-              champ obligatoire *
+
+          {error && (
+            <Text style={{ color: "red", fontSize: 12, marginTop: 10 }}>
+              Veuillez remplir tous les champs correctement.
             </Text>
           )}
 
           <View style={styles.button}>
             <TouchableOpacity style={styles.signIn} onPress={editProfile}>
               <LinearGradient
-                colors={["#01BACF", "#0EBFE3"]}
+                colors={["rgb(97, 172, 243)", "rgb(97, 172, 243)"]}
                 style={styles.signIn}
               >
                 <Text style={[styles.textSign, { color: "#fff" }]}>
@@ -186,44 +189,16 @@ export default function Profile({ navigation }) {
           </View>
         </View>
       </ScrollView>
-    </View>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  containerView: {
-    flex: 1,
-  },
-  loginScreenContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  imageStyle: {
-    width: 300,
-    height: 300,
-    alignSelf: "center",
-  },
-  loginFormTextInput: {
-    width: WIDTH - 55,
-    height: 45,
-    borderBottomWidth: 1,
-    borderColor: "#rgb(97, 172, 243)",
-    fontSize: 16,
-    paddingLeft: 45,
-    marginHorizontal: 25,
-    marginTop: 25,
-  },
-
-  errorText: {
-    color: "red",
-    fontSize: 10,
-    fontWeight: "bold",
-  },
   popupContainer: {
     backgroundColor: "white",
     padding: 10,
     width: WIDTH - 20,
+    height:600,
     alignSelf: "center",
     borderRadius: 10,
     elevation: 5,
@@ -232,7 +207,6 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
     marginTop: 80,
-    height: "H",
   },
   inputContainer: {
     flexDirection: "row",
@@ -245,7 +219,6 @@ const styles = StyleSheet.create({
     marginTop: 20,
     height: 50,
   },
-
   icon: {
     marginRight: 11,
   },
@@ -260,7 +233,7 @@ const styles = StyleSheet.create({
   },
   button: {
     alignItems: "center",
-    marginTop: 40,
+    marginTop: 70,
     borderRadius: 8,
   },
   signIn: {
@@ -274,15 +247,5 @@ const styles = StyleSheet.create({
   textSign: {
     fontSize: 18,
     fontWeight: "bold",
-  },
-  loginFormTextInput: {
-    width: WIDTH - 55,
-    height: 45,
-    borderBottomWidth: 1,
-    borderColor: "#rgb(97, 172, 243)",
-    fontSize: 16,
-    paddingLeft: 45,
-    marginHorizontal: 25,
-    marginTop: 25,
   },
 });

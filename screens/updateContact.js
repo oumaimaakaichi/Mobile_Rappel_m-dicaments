@@ -37,7 +37,7 @@ export default function UpdateContact({ route, navigation }) {
     }
     try {
       const res = await fetch(
-        `http://192.168.43.116:5000/api/update/${contact._id}`,
+        `http://192.168.43.105:5000/api/update/${contact._id}`,
         {
           method: "PATCH",
           headers: {
