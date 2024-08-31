@@ -147,17 +147,17 @@ export default function AllVacination({ navigation }) {
   }, []);
   const scheduleNotifications = async (vaccinations) => {
     vaccinations.forEach(async (item) => {
-      // Heure et date de vaccination
+     
       const vaccinationTimeParts = item.heure.split(":");
       console.log("bbbb"+vaccinationTimeParts)
       const vaccinationDate = new Date(item.date);
       vaccinationDate.setHours(parseInt(vaccinationTimeParts[0], 10));
       vaccinationDate.setMinutes(parseInt(vaccinationTimeParts[1], 10));
       console.log("bbbb"+vaccinationDate)
-      // Date de notheuren avant l'heure de vaccination
+    
       const notificationDate = new Date(vaccinationDate.getTime() - 2 * 60 * 60 * 1000);
   
-      // Vérifier si la notification doit être planifue
+  
       if (notificationDate > new Date()) {
         await Notifications.scheduleNotificationAsync({
           content: {
@@ -250,7 +250,7 @@ export default function AllVacination({ navigation }) {
     const formattedTime = `${rendezVousDate.getHours()}:${rendezVousDate.getMinutes()}`;
 
     const navigateToDetails = () => {
-      // Naviguer vers la page de détails en passant les données de l'élément sélectionné
+    
       navigation.navigate("DetailleVacination", { Vacination: item });
     };
 
@@ -762,7 +762,7 @@ export default function AllVacination({ navigation }) {
             paddingHorizontal: 15,
             paddingVertical: 20,
             borderRadius: showMenu ? 15 : 0,
-            // Transforming View...
+          
             transform: [{ scale: scaleValue }, { translateX: offsetValue }],
           }}
         >
@@ -788,14 +788,14 @@ export default function AllVacination({ navigation }) {
                   }).start();
 
                   Animated.timing(offsetValue, {
-                    // YOur Random Value...
+                 
                     toValue: showMenu ? 0 : 230,
                     duration: 300,
                     useNativeDriver: true,
                   }).start();
 
                   Animated.timing(closeButtonOffset, {
-                    // YOur Random Value...
+                    
                     toValue: !showMenu ? -30 : 0,
                     duration: 300,
                     useNativeDriver: true,
@@ -859,14 +859,14 @@ const styles = StyleSheet.create({
     alignItems: "flex-start",
     justifyContent: "flex-start",
 
-    shadowColor: "#000", // Couleur de l'ombre
+    shadowColor: "#000", 
     shadowOffset: {
       width: 0,
       height: 2,
-    }, // Décalage de l'ombre
-    shadowOpacity: 0.25, // Opacité de l'ombre
-    shadowRadius: 3.84, // Rayon de l'ombre
-    elevation: 5, // Pour les ombres sur Android
+    }, 
+    shadowOpacity: 0.25, 
+    shadowRadius: 3.84,
+    elevation: 5, 
   },
   s: {
     color: "#rgb(97, 172, 243)",

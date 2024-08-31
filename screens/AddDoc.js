@@ -27,7 +27,7 @@ const AddDoc = ({ navigation }) => {
   const [error, setError] = useState(false);
 
   useEffect(() => {
-    let isMounted = true; // Track whether the component is mounted
+    let isMounted = true; 
 
     const fetchUserData = async () => {
       const userData = await getClientData();
@@ -39,7 +39,7 @@ const AddDoc = ({ navigation }) => {
     fetchUserData();
 
     return () => {
-      isMounted = false; // Cleanup function to mark the component as unmounted
+      isMounted = false; 
     };
   }, []);
 

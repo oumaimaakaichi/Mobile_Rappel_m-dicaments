@@ -111,7 +111,7 @@ export default function AddMedicament({ navigation }) {
     showDateTimePicker();
   };
 
-  // Modifiez la fonction handleDateConfirm pour mettre à jour les états d'heure approprié
+
   const handleDateConfirm = (date) => {
     const selectedHour = date.getHours();
     const selectedMinutes = date.getMinutes();
@@ -153,17 +153,17 @@ export default function AddMedicament({ navigation }) {
         nom_medicament: nom,
         matin: {
           matin: showMatin,
-          DatePrise: selectedTimeMatin, // Vous devrez remplac cette valeur par la date appropriée
+          DatePrise: selectedTimeMatin, 
         },
         nuit: {
           nuit: showNuit,
-          DatePrise: selectedTimeNuit, // Remplacez également cette valeur par la date appropriée
+          DatePrise: selectedTimeNuit, 
         },
         demi_journe: {
           demi_journe: showDemiJournee,
-          DatePrise: selectedTimeDemiJournee, // Et celle-ci par la date appropriée
+          DatePrise: selectedTimeDemiJournee, 
         },
-        utilisateur: user.Data._id, // Assurez-vous que user._id contient l'ID de l'utilisateur actuel
+        utilisateur: user.Data._id, 
       });
 
       const response = await fetch(
@@ -194,13 +194,13 @@ export default function AddMedicament({ navigation }) {
           },
           onShow: () => {},
         });
-        // Vous pouvez également naviguer vers une autre vue ou effectuer d'autres actions nécessaires ici
+      
       } else {
-        // Il y a eu une erreur lors de l'ajout du médicament
+      
         console.error("Échec de l'ajout du médicament");
       }
     } catch (error) {
-      // Une erreur s'est produite lors de la tentative d'ajout du médicament
+   
       console.error("Erreur lors de l'ajout du médicament:", error);
     }
   };
@@ -690,12 +690,12 @@ export default function AddMedicament({ navigation }) {
             paddingHorizontal: 15,
             paddingVertical: 20,
             borderRadius: showMenu ? 15 : 0,
-            // Transforming View...
+ 
             transform: [{ scale: scaleValue }, { translateX: offsetValue }],
           }}
         >
           {
-            // Menu Button...
+          
           }
           <ScrollView style={{ marginVertical: 0 }}>
             <Animated.View
@@ -716,14 +716,14 @@ export default function AddMedicament({ navigation }) {
                   }).start();
 
                   Animated.timing(offsetValue, {
-                    // YOur Random Value...
+                
                     toValue: showMenu ? 0 : 230,
                     duration: 300,
                     useNativeDriver: true,
                   }).start();
 
                   Animated.timing(closeButtonOffset, {
-                    // YOur Random Value...
+                 
                     toValue: !showMenu ? -30 : 0,
                     duration: 300,
                     useNativeDriver: true,
@@ -1000,13 +1000,13 @@ const styles = StyleSheet.create({
     padding: 10,
     marginLeft: 30,
     borderRadius: 10,
-    elevation: 5, // Pour l'ombre sur Android
-    shadowColor: "#000", // Pour l'ombre sur iOS
-    shadowOffset: { width: 0, height: 2 }, // Pour l'ombre sur iOS
-    shadowOpacity: 0.25, // Pour l'ombre sur iOS
+    elevation: 5, 
+    shadowColor: "#000", 
+    shadowOffset: { width: 0, height: 2 }, 
+    shadowOpacity: 0.25, 
     shadowRadius: 3.84,
     alignItems: "center",
-    width: "85%", // Utilisez un pourcentage de la largeur de l'écran
+    width: "85%",
    
     alignSelf: "center",
     height: "100%",
@@ -1018,21 +1018,21 @@ const styles = StyleSheet.create({
   inputContainer: {
     flexDirection: "row",
     alignItems: "center",
-    borderWidth: 0.6, // Ajoutez d'autres styles de bordure selon vos besoins
-    borderColor: "rgb(70, 143, 183)", // Couleur de la bordure
-    borderRadius: 5, // Bordure arrondie
-    paddingHorizontal: 10, // Marge horizontale interne
+    borderWidth: 0.6, 
+    borderColor: "rgb(70, 143, 183)", 
+    borderRadius: 5, 
+    paddingHorizontal: 10, 
     marginTop: 20,
-    height: 50, // Espacement vers le haut
+    height: 50, 
   },
 
   icon: {
     marginRight: 11,
-    color: "#01BACF", // Espacement à droite de l'icône
+    color: "#01BACF", 
   },
   input: {
-    flex: 1, // Pour que le TextInput prenne tout l'espace restant
-    height: 70, // Hauteur du TextInput
+    flex: 1, 
+    height: 70, 
     marginLeft: 10,
     borderWidth: 0,
     borderColor: "#01BACF",

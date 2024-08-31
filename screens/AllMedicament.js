@@ -53,7 +53,7 @@ export default function AllMedicament({ navigation }) {
 
   const [user, setUser] = useState("");
   const offsetValue = useRef(new Animated.Value(0)).current;
-  // Scale Intially mmust be One...
+
   const scaleValue = useRef(new Animated.Value(1)).current;
   const closeButtonOffset = useRef(new Animated.Value(0)).current;
   const isFocused = useIsFocused();
@@ -116,8 +116,8 @@ export default function AllMedicament({ navigation }) {
         alert("Failed to get push token for push notification!");
         return;
       }
-      // Learn more about projectId:
-      // https://docs.expo.dev/push-notifications/push-notifications-setup/#configure-projectid
+    
+     
       token = (
         await Notifications.getExpoPushTokenAsync({
           projectId: "2cabd58e-13b7-4adc-bcd2-ea8675f091ce",
@@ -274,7 +274,7 @@ export default function AllMedicament({ navigation }) {
 
   const renderItem = ({ item }) => {
     const navigateToDetails = () => {
-      // Naviguer vers la page de détails en passant les données de l'élément sélectionné
+    
       navigation.navigate("oneMedicament", { med: item });
     };
 
@@ -736,12 +736,12 @@ export default function AllMedicament({ navigation }) {
             paddingHorizontal: 15,
             paddingVertical: 20,
             borderRadius: showMenu ? 15 : 0,
-            // Transforming View...
+          
             transform: [{ scale: scaleValue }, { translateX: offsetValue }],
           }}
         >
           {
-            // Menu Button...
+           
           }
           <ScrollView style={{ marginVertical: 0 }}>
             <Animated.View
@@ -762,14 +762,14 @@ export default function AllMedicament({ navigation }) {
                   }).start();
 
                   Animated.timing(offsetValue, {
-                    // YOur Random Value...
+                  
                     toValue: showMenu ? 0 : 230,
                     duration: 301,
                     useNativeDriver: true,
                   }).start();
 
                   Animated.timing(closeButtonOffset, {
-                    // YOur Random Value...
+                 
                     toValue: !showMenu ? -30 : 0,
                     duration: 300,
                     useNativeDriver: true,
@@ -802,9 +802,9 @@ export default function AllMedicament({ navigation }) {
                     />
                   </TouchableOpacity>
                 </View>
-                {/* Votre code ant */}
+               
                 <ScrollView style={{ marginVertical: 0 }}>
-                  {/* Votre code existant */}
+                  
                   <ScrollView horizontal={true}>
                     <FlatList
                       data={data}
@@ -830,14 +830,14 @@ const styles = StyleSheet.create({
     alignItems: "flex-start",
     justifyContent: "flex-start",
 
-    shadowColor: "#000", // Couleur de l'ombre
+    shadowColor: "#000", 
     shadowOffset: {
       width: 0,
       height: 2,
     }, // Décalage
-    shadowOpacity: 0.25, // Opacité de l'ombre
-    shadowRadius: 3.84, // Rayon de l'ombre
-    elevation: 5, // Pour les ombres sur Android
+    shadowOpacity: 0.25, 
+    shadowRadius: 3.84,
+    elevation: 5, 
   },
   s: {
     color: "#rgb(97, 172, 243)",

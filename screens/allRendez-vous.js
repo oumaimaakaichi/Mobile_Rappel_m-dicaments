@@ -212,7 +212,7 @@ AllRendez_vous({ navigation }) {
     const formattedTime = `${rendezVousDate.getHours()}:${rendezVousDate.getMinutes()}`;
 
     const navigateToDetails = () => {
-      // Naviguer vers la page de détails en passant les données de l'élément sélectionné
+
       navigation.navigate("DetailleRendezvous", { rendezVous: item });
     };
 
@@ -223,10 +223,7 @@ AllRendez_vous({ navigation }) {
             source={require("../assets/get.png")}
             style={{ width: 80, height: 70, marginRight: 10 }}
           />
-          {/*<Text style={styles.title}>
-            Date de prochain rendezVous : {"\n"} {formattedDate}
-            {"\n"} l'heure de rendezVous : {item.heure}
-    </Text>*/}
+         
           <Text style={styles.title}>
             <Text style={styles.whiteText}>
               Date de rendezVous : {"\n"}{" "}
@@ -748,14 +745,14 @@ marginLeft:10,
                   }).start();
 
                   Animated.timing(offsetValue, {
-                    // YOur Random Value...
+                 
                     toValue: showMenu ? 0 : 230,
                     duration: 300,
                     useNativeDriver: true,
                   }).start();
 
                   Animated.timing(closeButtonOffset, {
-                    // YOur Random Value...
+                  
                     toValue: !showMenu ? -30 : 0,
                     duration: 300,
                     useNativeDriver: true,
@@ -786,13 +783,13 @@ marginLeft:10,
                 }}
               ></Text>
               <ScrollView style={styles.s}>
-                {/* Votre code existant */}
+              
               </ScrollView>
 
               <Animated.View>
-                {/* Votre code existant */}
+              
                 <ScrollView style={{ marginVertical: 0 }}>
-                  {/* Votre code existant */}
+               
                   <ScrollView horizontal={true}>
                     <FlatList
                       data={data}
@@ -818,14 +815,14 @@ const styles = StyleSheet.create({
     alignItems: "flex-start",
     justifyContent: "flex-start",
 
-    shadowColor: "#000", // Couleur de l'ombre
+    shadowColor: "#000", 
     shadowOffset: {
       width: 0,
       height: 2,
     }, // Décalage de l'ombre
-    shadowOpacity: 0.25, // Opacité de l'ombre
-    shadowRadius: 3.84, // Rayon de l'ombre
-    elevation: 5, // Pour les ombres sur Android
+    shadowOpacity: 0.25, 
+    shadowRadius: 3.84, 
+    elevation: 5, 
   },
   s: {
     color: "#rgb(97, 172, 243)",
